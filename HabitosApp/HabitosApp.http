@@ -1,0 +1,6 @@
+@HabitosApp_HostAddress = http://localhost:5161
+
+GET {{HabitosApp_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
