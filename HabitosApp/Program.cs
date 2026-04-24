@@ -1,6 +1,7 @@
 using HabitosApp.Application.Interfaces;
 using HabitosApp.Application.Services;
 using HabitosApp.Infrastructure.Data;
+using HabitosApp.Infrastructure.Jobs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -38,6 +39,8 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IHabitoService, HabitoService>();
 builder.Services.AddHttpClient("Groq");
 builder.Services.AddScoped<IAiService, AiService>();
+builder.Services.AddScoped<INotificacionService, NotificacionService>();
+builder.Services.AddHostedService<InactividadJob>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(opciones =>
@@ -90,5 +93,11 @@ app.UseCors("politicaFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    var contexto = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await SeedData.inicializarAsync(contexto);
+}
 
 app.Run();
