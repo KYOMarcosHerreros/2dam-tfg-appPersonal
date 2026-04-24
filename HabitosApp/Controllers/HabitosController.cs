@@ -1,3 +1,5 @@
+using HabitosApp.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 using HabitosApp.Application.DTOs;
 using HabitosApp.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -12,10 +14,12 @@ namespace HabitosApp.Controllers
     public class HabitosController : ControllerBase
     {
         private readonly IHabitoService _habitoService;
+        private readonly AppDbContext _contexto;
 
-        public HabitosController(IHabitoService habitoService)
+        public HabitosController(IHabitoService habitoService, AppDbContext contexto)
         {
             _habitoService = habitoService;
+            _contexto = contexto;
         }
 
         private int obtenerUsuarioId() =>
@@ -112,6 +116,34 @@ namespace HabitosApp.Controllers
             {
                 var categorias = await _habitoService.obtenerCategorias();
                 return Ok(categorias);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = ex.Message });
+            }
+        }
+
+        [HttpGet("{id}/racha")]
+        public async Task<IActionResult> ObtenerRacha(int id)
+        {
+            try
+            {
+                var racha = await _contexto.Rachas
+                    .Include(r => r.Habito)
+                    .FirstOrDefaultAsync(r => r.HabitoId == id && r.Habito.UsuarioId == obtenerUsuarioId());
+
+                if (racha == null)
+                    return NotFound(new { mensaje = "Racha no encontrada" });
+
+                return Ok(new RachaDto
+                {
+                    habitoId = racha.HabitoId,
+                    habitoNombre = racha.Habito.Nombre,
+                    diasActual = racha.DiasActual,
+                    diasRecord = racha.DiasRecord,
+                    fechaInicioActual = racha.FechaInicioActual,
+                    fechaUltimoRegistro = racha.FechaUltimoRegistro
+                });
             }
             catch (Exception ex)
             {
