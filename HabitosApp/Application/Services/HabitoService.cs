@@ -10,10 +10,12 @@ namespace HabitosApp.Application.Services
     public class HabitoService : IHabitoService
     {
         private readonly AppDbContext _contexto;
+        private readonly IAiService _aiService;
 
-        public HabitoService(AppDbContext contexto)
+        public HabitoService(AppDbContext contexto, IAiService aiService)
         {
             _contexto = contexto;
+            _aiService = aiService;
         }
 
         public async Task<List<HabitoDto>> obtenerHabitosUsuario(int usuarioId)
@@ -63,14 +65,20 @@ namespace HabitosApp.Application.Services
 
         public async Task<HabitoDto> crearHabitoPersonalizado(int usuarioId, CrearHabitoDto dto)
         {
+            var categorizacion = await _aiService.categorizarHabito(dto.nombre);
+
+            var categoria = await _contexto.Categorias
+                .FirstOrDefaultAsync(c => c.Nombre == categorizacion.categoria);
+
             var habito = new Habito
             {
                 UsuarioId = usuarioId,
                 Nombre = dto.nombre,
                 Descripcion = dto.descripcion,
-                Icono = dto.icono,
+                Icono = string.IsNullOrEmpty(dto.icono) ? categorizacion.icono : dto.icono,
                 FrecuenciaSemanal = dto.frecuenciaSemanal,
                 EsNegativo = dto.esNegativo,
+                CategoriaId = categoria?.Id,
                 TipoHabito = TipoHabito.Personalizado,
                 EsPersonalizado = true,
                 EstaActivo = true,
