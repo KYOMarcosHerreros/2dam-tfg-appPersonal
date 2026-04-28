@@ -4,6 +4,7 @@ using HabitosApp.Domain.Entities;
 using HabitosApp.Domain.Enums;
 using HabitosApp.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace HabitosApp.Application.Services
 {
@@ -90,6 +91,151 @@ namespace HabitosApp.Application.Services
             await crearRachaInicial(habito.Id);
 
             return await obtenerHabitoPorId(habito.Id, usuarioId);
+        }
+
+        public async Task<HabitoDto> crearHabitoPersonalizadoConIA(int usuarioId, CrearHabitoPersonalizadoDto dto)
+        {
+            int? categoriaId = dto.CategoriaIdSugerida;
+
+            // Si el usuario quiere usar la IA para categorizar y no ha seleccionado una categoría específica
+            if (dto.UsarCategorizacionIA && !dto.CategoriaIdSugerida.HasValue)
+            {
+                var sugerencia = await sugerirCategorizacion(dto.Nombre, dto.Descripcion);
+                categoriaId = sugerencia.CategoriaIdSugerida;
+            }
+
+            var habito = new Habito
+            {
+                UsuarioId = usuarioId,
+                Nombre = dto.Nombre,
+                Descripcion = dto.Descripcion,
+                Icono = dto.Icono,
+                FrecuenciaSemanal = dto.FrecuenciaSemanal,
+                EsNegativo = dto.EsNegativo,
+                CategoriaId = categoriaId,
+                TipoHabito = (TipoHabito)dto.TipoHabito,
+                EsPersonalizado = true,
+                EstaActivo = true,
+                FechaCreacion = DateTime.UtcNow
+            };
+
+            _contexto.Habitos.Add(habito);
+            await _contexto.SaveChangesAsync();
+            await crearRachaInicial(habito.Id);
+
+            return await obtenerHabitoPorId(habito.Id, usuarioId);
+        }
+
+        public async Task<SugerenciaCategorizacionDto> sugerirCategorizacion(string nombreHabito, string descripcion)
+        {
+            var categorias = await obtenerCategorias();
+            
+            // Crear prompt para la IA
+            var categoriasTexto = string.Join("\n", categorias.Select(c => $"- ID {c.Id}: {c.nombre} ({c.descripcion})"));
+            
+            var prompt = $@"Analiza el siguiente hábito y sugiere la mejor categoría.
+
+Hábito: {nombreHabito}
+Descripción: {(string.IsNullOrEmpty(descripcion) ? "Sin descripción" : descripcion)}
+
+Categorías disponibles:
+{categoriasTexto}
+
+Responde SOLO con un JSON válido (sin markdown, sin texto adicional) en este formato exacto:
+{{
+    ""categoriaId"": 1,
+    ""confianza"": 85,
+    ""razon"": ""Explicación breve"",
+    ""alternativas"": [
+        {{""categoriaId"": 2, ""confianza"": 60}}
+    ]
+}}";
+
+            try
+            {
+                Console.WriteLine("[DEBUG] Solicitando categorización a IA...");
+                var respuestaIA = await _aiService.enviarMensajeSimple(prompt);
+                Console.WriteLine($"[DEBUG] Respuesta IA: {respuestaIA}");
+                
+                // Limpiar la respuesta
+                var respuestaLimpia = respuestaIA.Trim();
+                if (respuestaLimpia.Contains("```"))
+                {
+                    respuestaLimpia = respuestaLimpia
+                        .Replace("```json", "")
+                        .Replace("```", "")
+                        .Trim();
+                }
+                
+                var opciones = new JsonSerializerOptions 
+                { 
+                    PropertyNameCaseInsensitive = true,
+                    AllowTrailingCommas = true
+                };
+                
+                var respuestaJson = JsonSerializer.Deserialize<JsonElement>(respuestaLimpia, opciones);
+                
+                var categoriaIdSugerida = respuestaJson.GetProperty("categoriaId").GetInt32();
+                var confianza = respuestaJson.GetProperty("confianza").GetDouble();
+                var razon = respuestaJson.GetProperty("razon").GetString() ?? "";
+                
+                var categoriaSugerida = categorias.FirstOrDefault(c => c.Id == categoriaIdSugerida);
+                
+                // Si la categoría no existe, usar la primera disponible
+                if (categoriaSugerida == null)
+                {
+                    Console.WriteLine($"[WARNING] Categoría ID {categoriaIdSugerida} no encontrada, usando primera categoría");
+                    categoriaSugerida = categorias.First();
+                    categoriaIdSugerida = categoriaSugerida.Id;
+                }
+                
+                var sugerencia = new SugerenciaCategorizacionDto
+                {
+                    CategoriaIdSugerida = categoriaIdSugerida,
+                    CategoriaNombre = categoriaSugerida.nombre,
+                    Razon = razon,
+                    Confianza = confianza,
+                    AlternativasSugeridas = new List<CategoriaAlternativaDto>()
+                };
+
+                // Procesar alternativas si existen
+                if (respuestaJson.TryGetProperty("alternativas", out JsonElement alternativasJson))
+                {
+                    foreach (var alt in alternativasJson.EnumerateArray())
+                    {
+                        var altCategoriaId = alt.GetProperty("categoriaId").GetInt32();
+                        var altConfianza = alt.GetProperty("confianza").GetDouble();
+                        var altCategoria = categorias.FirstOrDefault(c => c.Id == altCategoriaId);
+                        
+                        if (altCategoria != null)
+                        {
+                            sugerencia.AlternativasSugeridas.Add(new CategoriaAlternativaDto
+                            {
+                                CategoriaId = altCategoriaId,
+                                Nombre = altCategoria.nombre,
+                                Confianza = altConfianza
+                            });
+                        }
+                    }
+                }
+
+                Console.WriteLine($"[DEBUG] Categorización exitosa: {categoriaSugerida.nombre} ({confianza}%)");
+                return sugerencia;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] Error en categorización IA: {ex.Message}");
+                // Si falla la IA, devolver la primera categoría disponible
+                var categoriaDefault = categorias.FirstOrDefault() ?? new CategoriaDto { Id = 1, nombre = "General" };
+                return new SugerenciaCategorizacionDto
+                {
+                    CategoriaIdSugerida = categoriaDefault.Id,
+                    CategoriaNombre = categoriaDefault.nombre,
+                    Razon = "Categoría asignada automáticamente (la IA no pudo procesar la solicitud)",
+                    Confianza = 50,
+                    AlternativasSugeridas = new List<CategoriaAlternativaDto>()
+                };
+            }
         }
 
         public async Task<HabitoDto> actualizarHabito(int habitoId, int usuarioId, ActualizarHabitoDto dto)

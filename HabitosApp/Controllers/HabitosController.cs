@@ -67,6 +67,34 @@ namespace HabitosApp.Controllers
             }
         }
 
+        [HttpPost("personalizado-con-ia")]
+        public async Task<IActionResult> CrearHabitoPersonalizadoConIA([FromBody] CrearHabitoPersonalizadoDto dto)
+        {
+            try
+            {
+                var habito = await _habitoService.crearHabitoPersonalizadoConIA(obtenerUsuarioId(), dto);
+                return Ok(habito);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = ex.Message });
+            }
+        }
+
+        [HttpPost("sugerir-categorizacion")]
+        public async Task<IActionResult> SugerirCategorizacion([FromBody] SugerirCategorizacionRequest request)
+        {
+            try
+            {
+                var sugerencia = await _habitoService.sugerirCategorizacion(request.Nombre, request.Descripcion);
+                return Ok(sugerencia);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = ex.Message });
+            }
+        }
+
         [HttpPost("personalizado")]
         public async Task<IActionResult> CrearHabitoPersonalizado([FromBody] CrearHabitoDto dto)
         {
@@ -126,8 +154,7 @@ namespace HabitosApp.Controllers
         [HttpGet("{id}/racha")]
         public async Task<IActionResult> ObtenerRacha(int id)
         {
-            try
-            {
+            try {
                 var racha = await _contexto.Rachas
                     .Include(r => r.Habito)
                     .FirstOrDefaultAsync(r => r.HabitoId == id && r.Habito.UsuarioId == obtenerUsuarioId());
@@ -139,6 +166,48 @@ namespace HabitosApp.Controllers
                 {
                     habitoId = racha.HabitoId,
                     habitoNombre = racha.Habito.Nombre,
+                    diasActual = racha.DiasActual,
+                    diasRecord = racha.DiasRecord,
+                    fechaInicioActual = racha.FechaInicioActual,
+                    fechaUltimoRegistro = racha.FechaUltimoRegistro
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = ex.Message });
+            }
+        }
+
+        [HttpPost("{id}/recalcular-racha")]
+        public async Task<IActionResult> RecalcularRacha(int id)
+        {
+            try
+            {
+                var habito = await _contexto.Habitos
+                    .FirstOrDefaultAsync(h => h.Id == id && h.UsuarioId == obtenerUsuarioId());
+
+                if (habito == null)
+                    return NotFound(new { mensaje = "Hábito no encontrado" });
+
+                // Obtener el servicio de registro diario para recalcular
+                var registroService = HttpContext.RequestServices.GetRequiredService<IRegistroDiarioService>();
+                
+                // Forzar recálculo marcando y desmarcando
+                var hoy = DateOnly.FromDateTime(DateTime.UtcNow);
+                await registroService.marcarHabito(obtenerUsuarioId(), new MarcarHabitoDto
+                {
+                    habitoId = id,
+                    fecha = hoy,
+                    completado = true
+                });
+
+                var racha = await _contexto.Rachas
+                    .FirstOrDefaultAsync(r => r.HabitoId == id);
+
+                return Ok(new RachaDto
+                {
+                    habitoId = racha.HabitoId,
+                    habitoNombre = habito.Nombre,
                     diasActual = racha.DiasActual,
                     diasRecord = racha.DiasRecord,
                     fechaInicioActual = racha.FechaInicioActual,

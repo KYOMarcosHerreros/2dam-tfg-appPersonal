@@ -17,30 +17,55 @@ namespace HabitosApp.Application.Services
         public async Task<EstadisticasGeneralesDto> obtenerEstadisticasGenerales(int usuarioId)
         {
             var hoy = DateOnly.FromDateTime(DateTime.UtcNow);
+            Console.WriteLine($"[DEBUG] Obteniendo estadísticas para usuario {usuarioId}, fecha hoy: {hoy}");
 
             var habitos = await _contexto.Habitos
                 .Where(h => h.UsuarioId == usuarioId && h.EstaActivo)
                 .ToListAsync();
+            Console.WriteLine($"[DEBUG] Hábitos activos encontrados: {habitos.Count}");
 
+            // Solo contar registros de hábitos activos y únicos por hábito
+            var habitosActivosIds = habitos.Select(h => h.Id).ToList();
             var registrosHoy = await _contexto.RegistrosDiarios
-                .Where(r => r.UsuarioId == usuarioId && r.Fecha == hoy && r.Completado)
+                .Where(r => r.UsuarioId == usuarioId 
+                    && r.Fecha == hoy 
+                    && r.Completado
+                    && habitosActivosIds.Contains(r.HabitoId))
+                .GroupBy(r => r.HabitoId)
+                .Select(g => g.First())
                 .ToListAsync();
+            Console.WriteLine($"[DEBUG] Registros completados hoy: {registrosHoy.Count}");
 
             var rachas = await _contexto.Rachas
                 .Where(r => r.Habito.UsuarioId == usuarioId)
                 .ToListAsync();
 
+            // Calcular días únicos de uso real de la app
+            var diasUsoReal = await _contexto.RegistrosDiarios
+                .Where(r => r.UsuarioId == usuarioId)
+                .Select(r => r.Fecha)
+                .Distinct()
+                .CountAsync();
+            Console.WriteLine($"[DEBUG] Días únicos de uso real: {diasUsoReal}");
+
             var fechaInicioSemana = hoy.AddDays(-6);
+            Console.WriteLine($"[DEBUG] Calculando últimos 7 días desde {fechaInicioSemana} hasta {hoy}");
             var ultimos7Dias = new List<ResumenDiarioDto>();
 
             for (int i = 0; i < 7; i++)
             {
                 var fecha = fechaInicioSemana.AddDays(i);
                 var registrosDia = await _contexto.RegistrosDiarios
-                    .Where(r => r.UsuarioId == usuarioId && r.Fecha == fecha)
+                    .Where(r => r.UsuarioId == usuarioId 
+                        && r.Fecha == fecha
+                        && habitosActivosIds.Contains(r.HabitoId))
+                    .GroupBy(r => r.HabitoId)
+                    .Select(g => g.First())
                     .ToListAsync();
 
                 var completados = registrosDia.Count(r => r.Completado);
+                Console.WriteLine($"[DEBUG] Fecha {fecha}: {completados} de {habitos.Count} completados");
+                
                 ultimos7Dias.Add(new ResumenDiarioDto
                 {
                     fecha = fecha,
@@ -61,6 +86,7 @@ namespace HabitosApp.Application.Services
                     : 0,
                 mejorRacha = rachas.Any() ? rachas.Max(r => r.DiasRecord) : 0,
                 rachaActualMaxima = rachas.Any() ? rachas.Max(r => r.DiasActual) : 0,
+                diasUsoReal = diasUsoReal, // Nuevo campo
                 ultimos7Dias = ultimos7Dias
             };
         }
@@ -108,8 +134,12 @@ namespace HabitosApp.Application.Services
                 .Where(h => h.UsuarioId == usuarioId && h.EstaActivo)
                 .ToListAsync();
 
+            var habitosActivosIds = habitos.Select(h => h.Id).ToList();
             var registros = await _contexto.RegistrosDiarios
-                .Where(r => r.UsuarioId == usuarioId && r.Fecha >= fechaInicio && r.Fecha <= hoy)
+                .Where(r => r.UsuarioId == usuarioId 
+                    && r.Fecha >= fechaInicio 
+                    && r.Fecha <= hoy
+                    && habitosActivosIds.Contains(r.HabitoId))
                 .ToListAsync();
 
             var mapaCalor = new List<MapaCalorDto>();
@@ -117,7 +147,11 @@ namespace HabitosApp.Application.Services
             for (int i = 0; i <= dias; i++)
             {
                 var fecha = fechaInicio.AddDays(i);
-                var completados = registros.Count(r => r.Fecha == fecha && r.Completado);
+                // Contar solo registros únicos por hábito
+                var completados = registros
+                    .Where(r => r.Fecha == fecha && r.Completado)
+                    .GroupBy(r => r.HabitoId)
+                    .Count();
 
                 mapaCalor.Add(new MapaCalorDto
                 {

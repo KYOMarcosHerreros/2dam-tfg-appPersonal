@@ -7,6 +7,7 @@ namespace HabitosApp.Application.Interfaces
         Task<List<NotificacionDto>> obtenerNotificaciones(int usuarioId);
         Task marcarComoLeida(int notificacionId, int usuarioId);
         Task marcarTodasComoLeidas(int usuarioId);
+        Task eliminarNotificacion(int notificacionId, int usuarioId);
         Task enviarRecordatorio(int usuarioId, string mensaje);
         Task verificarInactividad();
     }

@@ -54,11 +54,14 @@ namespace HabitosApp.Controllers
         {
             try
             {
+                Console.WriteLine($"[DEBUG] Marcando hábito - HabitoId: {dto.habitoId}, Fecha: {dto.fecha}, Completado: {dto.completado}");
                 var registro = await _registroService.marcarHabito(obtenerUsuarioId(), dto);
+                Console.WriteLine($"[DEBUG] Registro guardado exitosamente - Id: {registro.Id}");
                 return Ok(registro);
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"[ERROR] Error al marcar hábito: {ex.Message}");
                 return BadRequest(new { mensaje = ex.Message });
             }
         }

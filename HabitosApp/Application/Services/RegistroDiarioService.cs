@@ -117,34 +117,96 @@ namespace HabitosApp.Application.Services
             var racha = await _contexto.Rachas
                 .FirstOrDefaultAsync(r => r.HabitoId == habitoId);
 
-            if (racha == null) return;
-
-            if (completado)
+            if (racha == null)
             {
-                var diasDiferencia = fecha.DayNumber - racha.FechaUltimoRegistro.DayNumber;
+                Console.WriteLine($"[ERROR] No se encontró racha para hábito {habitoId}");
+                return;
+            }
 
-                if (diasDiferencia == 1)
-                {
-                    racha.DiasActual++;
-                }
-                else if (diasDiferencia > 1)
-                {
-                    racha.DiasActual = 1;
-                    racha.FechaInicioActual = fecha;
-                }
+            Console.WriteLine($"[DEBUG] ===== ACTUALIZANDO RACHA =====");
+            Console.WriteLine($"[DEBUG] Hábito ID: {habitoId}");
+            Console.WriteLine($"[DEBUG] Fecha actual: {fecha}");
+            Console.WriteLine($"[DEBUG] Completado: {completado}");
+            Console.WriteLine($"[DEBUG] Racha antes - Actual: {racha.DiasActual}, Record: {racha.DiasRecord}");
 
-                if (racha.DiasActual > racha.DiasRecord)
-                    racha.DiasRecord = racha.DiasActual;
+            // Obtener todos los registros completados del hábito, ordenados por fecha
+            var registrosCompletados = await _contexto.RegistrosDiarios
+                .Where(r => r.HabitoId == habitoId && r.Completado)
+                .OrderBy(r => r.Fecha)
+                .Select(r => r.Fecha)
+                .Distinct()
+                .ToListAsync();
 
+            Console.WriteLine($"[DEBUG] Total de días completados en BD: {registrosCompletados.Count}");
+            if (registrosCompletados.Count > 0)
+            {
+                Console.WriteLine($"[DEBUG] Primer día: {registrosCompletados.First()}");
+                Console.WriteLine($"[DEBUG] Último día: {registrosCompletados.Last()}");
+                Console.WriteLine($"[DEBUG] Fechas: {string.Join(", ", registrosCompletados.Take(10))}");
+            }
+
+            if (registrosCompletados.Count == 0)
+            {
+                // No hay registros completados
+                racha.DiasActual = 0;
+                racha.FechaInicioActual = fecha;
                 racha.FechaUltimoRegistro = fecha;
+                Console.WriteLine($"[DEBUG] No hay registros completados, racha = 0");
             }
             else
             {
-                racha.DiasActual = 0;
-                racha.FechaInicioActual = fecha;
+                // Calcular la racha actual (días consecutivos hasta hoy o la fecha más reciente)
+                var fechaMasReciente = registrosCompletados.Max();
+                var rachaActual = 0;
+                var fechaActual = fechaMasReciente;
+                var fechaInicioRacha = fechaMasReciente;
+
+                Console.WriteLine($"[DEBUG] Calculando racha desde: {fechaMasReciente}");
+
+                // Contar hacia atrás desde la fecha más reciente
+                while (registrosCompletados.Contains(fechaActual))
+                {
+                    rachaActual++;
+                    fechaInicioRacha = fechaActual;
+                    Console.WriteLine($"[DEBUG] Día {rachaActual}: {fechaActual}");
+                    fechaActual = fechaActual.AddDays(-1);
+                }
+
+                Console.WriteLine($"[DEBUG] Racha actual calculada: {rachaActual} días (desde {fechaInicioRacha} hasta {fechaMasReciente})");
+
+                // Calcular la racha más larga histórica
+                var rachaMaxima = 0;
+                var rachaTemp = 0;
+                DateOnly? fechaAnterior = null;
+
+                foreach (var fechaRegistro in registrosCompletados)
+                {
+                    if (fechaAnterior == null || fechaRegistro.DayNumber - fechaAnterior.Value.DayNumber == 1)
+                    {
+                        rachaTemp++;
+                    }
+                    else
+                    {
+                        rachaMaxima = Math.Max(rachaMaxima, rachaTemp);
+                        rachaTemp = 1;
+                    }
+                    fechaAnterior = fechaRegistro;
+                }
+                rachaMaxima = Math.Max(rachaMaxima, rachaTemp);
+
+                Console.WriteLine($"[DEBUG] Racha máxima histórica: {rachaMaxima} días");
+
+                // Actualizar la racha
+                racha.DiasActual = rachaActual;
+                racha.DiasRecord = Math.Max(racha.DiasRecord, rachaMaxima);
+                racha.FechaInicioActual = fechaInicioRacha;
+                racha.FechaUltimoRegistro = fechaMasReciente;
+
+                Console.WriteLine($"[DEBUG] Racha después - Actual: {racha.DiasActual}, Record: {racha.DiasRecord}");
             }
 
             await _contexto.SaveChangesAsync();
+            Console.WriteLine($"[DEBUG] ===== RACHA GUARDADA =====");
         }
     }
 }

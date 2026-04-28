@@ -7,6 +7,7 @@ namespace HabitosApp.Application.DTOs
         public double porcentajeHoy { get; set; }
         public int mejorRacha { get; set; }
         public int rachaActualMaxima { get; set; }
+        public int diasUsoReal { get; set; } // Nuevo campo para días únicos de uso
         public List<ResumenDiarioDto> ultimos7Dias { get; set; } = new();
     }
 }

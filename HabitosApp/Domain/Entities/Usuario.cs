@@ -7,8 +7,12 @@ namespace HabitosApp.Domain.Entities
         public string Email { get; set; } = string.Empty;
         public string PasswordHash { get; set; } = string.Empty;
         public string? Telefono { get; set; }
-        public bool NotificacionesEmail { get; set; } = true;
+        public string? FotoPerfil { get; set; }
+        public bool NotificacionesEmail { get; set; } = false; // Por defecto desactivado
         public bool NotificacionesPush { get; set; } = true;
+        public bool EmailVerificado { get; set; } = false; // Nuevo campo
+        public string? TokenVerificacionEmail { get; set; } // Nuevo campo
+        public DateTime? FechaTokenVerificacion { get; set; } // Nuevo campo
         public DateTime FechaRegistro { get; set; } = DateTime.UtcNow;
         public DateTime? UltimoAcceso { get; set; }
 

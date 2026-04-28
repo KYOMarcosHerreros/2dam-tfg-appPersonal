@@ -9,7 +9,6 @@ using Microsoft.OpenApi;
 using Microsoft.OpenApi.Models;
 using System.Text;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Base de datos
@@ -37,10 +36,13 @@ builder.Services.AddAuthorization();
 builder.Services.AddScoped<IRegistroDiarioService, RegistroDiarioService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IHabitoService, HabitoService>();
+builder.Services.AddScoped<IEstadisticasService, EstadisticasService>();
 builder.Services.AddHttpClient("Groq");
 builder.Services.AddScoped<IAiService, AiService>();
 builder.Services.AddScoped<INotificacionService, NotificacionService>();
+builder.Services.AddScoped<IVerificacionEmailService, VerificacionEmailService>();
 builder.Services.AddHostedService<InactividadJob>();
+builder.Services.AddHostedService<ConsejoDiarioJob>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(opciones =>
