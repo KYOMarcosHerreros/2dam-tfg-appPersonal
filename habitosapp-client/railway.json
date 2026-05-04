@@ -5,5 +5,8 @@
   "deploy": {
     "startCommand": "npm run preview",
     "restartPolicyType": "ON_FAILURE"
+  },
+  "variables": {
+    "NODE_VERSION": "20"
   }
 }
