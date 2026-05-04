@@ -99,11 +99,14 @@ builder.Services.AddCors(opciones =>
 {
     opciones.AddPolicy("politicaFrontend", politica =>
     {
-        var origenes = new List<string> { "http://localhost:5173" };
+        var origenes = new List<string> { 
+            "http://localhost:5173",
+            "https://front-production-cf2b.up.railway.app"
+        };
         
         // Añadir URL de producción si existe
         var frontendUrl = Environment.GetEnvironmentVariable("FRONTEND_URL");
-        if (!string.IsNullOrEmpty(frontendUrl) && frontendUrl != "http://localhost:5173")
+        if (!string.IsNullOrEmpty(frontendUrl) && !origenes.Contains(frontendUrl))
         {
             origenes.Add(frontendUrl);
         }
