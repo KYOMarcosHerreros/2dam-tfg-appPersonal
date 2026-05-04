@@ -11,8 +11,8 @@ export default defineConfig({
     outDir: 'dist'
   },
   preview: {
-    port: 4173,
+    port: process.env.PORT || 4173,
     host: '0.0.0.0',
-    allowedHosts: ['all']
+    allowedHosts: 'all'
   }
 })
