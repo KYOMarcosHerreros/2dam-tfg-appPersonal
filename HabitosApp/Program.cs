@@ -33,16 +33,16 @@ else
 {
     Console.WriteLine($"Using PostgreSQL database: {connectionString.Substring(0, Math.Min(50, connectionString.Length))}...");
     
-    // Verificar que la cadena de conexión sea válida
     try
     {
-        var connectionStringBuilder = new Npgsql.NpgsqlConnectionStringBuilder(connectionString);
-        Console.WriteLine($"Database: {connectionStringBuilder.Database}");
-        Console.WriteLine($"Host: {connectionStringBuilder.Host}");
-        Console.WriteLine($"Port: {connectionStringBuilder.Port}");
+        // Convertir URL de PostgreSQL al formato de Npgsql
+        var uri = new Uri(connectionString);
+        var npgsqlConnectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.Trim('/')};Username={uri.UserInfo.Split(':')[0]};Password={uri.UserInfo.Split(':')[1]};SSL Mode=Require;Trust Server Certificate=true";
+        
+        Console.WriteLine($"Converted connection string: Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.Trim('/')};Username={uri.UserInfo.Split(':')[0]};Password=***");
         
         builder.Services.AddDbContext<AppDbContext>(opciones =>
-            opciones.UseNpgsql(connectionString));
+            opciones.UseNpgsql(npgsqlConnectionString));
     }
     catch (Exception ex)
     {
