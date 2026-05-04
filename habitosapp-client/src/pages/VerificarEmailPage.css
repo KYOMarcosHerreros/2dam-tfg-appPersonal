@@ -1,0 +1,152 @@
+.verificar-email-contenedor {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.verificar-email-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 40px;
+  max-width: 500px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.verificar-email-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.verificar-email-content h1 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+}
+
+.verificar-email-content p {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px;
+  color: #666;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.verificar-email-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(124, 106, 255, 0.2);
+  border-top: 4px solid #7c6aff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.verificar-email-exito {
+  color: #22c55e;
+}
+
+.verificar-email-exito svg {
+  color: #22c55e;
+}
+
+.verificar-email-error {
+  color: #ef4444;
+}
+
+.verificar-email-error svg {
+  color: #ef4444;
+}
+
+.verificar-email-beneficios {
+  background: linear-gradient(135deg, rgba(124, 106, 255, 0.1), rgba(255, 106, 176, 0.1));
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+  text-align: left;
+}
+
+.verificar-email-beneficios h3 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: #7c6aff;
+  margin: 0 0 12px 0;
+  text-align: center;
+}
+
+.verificar-email-beneficios ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.verificar-email-beneficios li {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: #555;
+  padding: 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.verificar-email-redirect {
+  font-size: 14px;
+  color: #999;
+  font-style: italic;
+}
+
+.verificar-email-acciones {
+  margin-top: 20px;
+}
+
+.verificar-email-boton {
+  background: linear-gradient(135deg, #7c6aff, #ff6ab0);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  margin: 0 auto;
+}
+
+.verificar-email-boton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(124, 106, 255, 0.3);
+}
+
+@media (max-width: 768px) {
+  .verificar-email-card {
+    padding: 30px 20px;
+    margin: 20px;
+  }
+
+  .verificar-email-content h1 {
+    font-size: 24px;
+  }
+
+  .verificar-email-content p {
+    font-size: 14px;
+  }
+}

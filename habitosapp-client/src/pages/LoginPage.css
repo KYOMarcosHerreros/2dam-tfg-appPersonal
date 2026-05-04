@@ -1,0 +1,236 @@
+.login-contenedor {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #0f0f13;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-fondo {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.login-orbe {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+}
+
+.login-tarjeta {
+  width: 100%;
+  max-width: 420px;
+  background: linear-gradient(135deg, #1c1c26, #16161d);
+  border: 1px solid #2e2e3e;
+  border-radius: 24px;
+  padding: 40px;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+}
+
+.login-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 32px;
+}
+
+.login-logo-texto {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  background: linear-gradient(135deg, #7c6aff, #ff6ab0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.login-titulo {
+  font-size: 28px;
+  font-weight: 800;
+  color: #f0eeff;
+  margin-bottom: 8px;
+  font-family: 'Outfit', sans-serif;
+}
+
+.login-subtitulo {
+  font-size: 14px;
+  color: #9090b0;
+  margin-bottom: 32px;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.login-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.login-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #9090b0;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.login-input {
+  width: 100%;
+  padding: 12px 16px;
+  background-color: #13131a;
+  border: 1px solid #2e2e3e;
+  border-radius: 12px;
+  color: #f0eeff;
+  font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.login-input:focus {
+  border-color: #7c6aff;
+  box-shadow: 0 0 0 3px rgba(124, 106, 255, 0.1);
+}
+
+.login-input.input-error {
+  border-color: #ff6a8a;
+  box-shadow: 0 0 0 3px rgba(255, 106, 138, 0.1);
+}
+
+.login-input.input-valido {
+  border-color: #6affd4;
+  box-shadow: 0 0 0 3px rgba(106, 255, 212, 0.1);
+}
+
+.login-input-contenedor {
+  position: relative;
+}
+
+.login-input-password {
+  padding-right: 48px;
+}
+
+.login-ojo {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  color: #9090b0;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.login-ojo:hover {
+  color: #f0eeff;
+}
+
+.login-reglas {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  background-color: #13131a;
+  border-radius: 10px;
+  margin-top: 6px;
+  border: 1px solid #2e2e3e;
+}
+
+.login-regla-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.login-regla-texto {
+  font-size: 12px;
+  font-family: 'DM Sans', sans-serif;
+  transition: color 0.2s;
+}
+
+.login-regla-texto.cumplida {
+  color: #6affd4;
+}
+
+.login-regla-texto.no-cumplida {
+  color: #55556a;
+}
+
+.login-mensaje-error {
+  font-size: 12px;
+  color: #ff6a8a;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.login-mensaje-exito {
+  font-size: 12px;
+  color: #6affd4;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.login-boton-principal {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #7c6aff, #ff6ab0);
+  color: #ffffff;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: 'Outfit', sans-serif;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(124, 106, 255, 0.3);
+}
+
+.login-boton-principal:disabled {
+  opacity: 0.7;
+}
+
+.login-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+}
+
+.login-cambiar-modo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 24px;
+  font-size: 14px;
+  color: #9090b0;
+}
+
+.login-boton-texto {
+  background: none;
+  background: linear-gradient(135deg, #7c6aff, #ff6ab0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  padding: 0;
+  cursor: pointer;
+  border: none;
+}

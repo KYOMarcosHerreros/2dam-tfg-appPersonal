@@ -11,12 +11,22 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Cargar variables de entorno desde .env
+DotNetEnv.Env.Load();
+
+// Configuración para Railway - Puerto dinámico
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+
 // Base de datos
+var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL") ?? 
+                      "Server=(localdb)\\MSSQLLocalDB;Database=HabitosAppDB;Trusted_Connection=True;TrustServerCertificate=True";
 builder.Services.AddDbContext<AppDbContext>(opciones =>
-    opciones.UseSqlServer(builder.Configuration.GetConnectionString("conexionPrincipal")));
+    opciones.UseNpgsql(connectionString));
 
 // JWT
-var claveJwt = builder.Configuration["Jwt:clave"]!;
+var claveJwt = Environment.GetEnvironmentVariable("JWT_SECRET") ?? 
+               "HabitosApp_SuperSecretKey_2024_MinLength32Chars_ForProduction";
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(opciones =>
     {
@@ -26,8 +36,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:emisor"],
-            ValidAudience = builder.Configuration["Jwt:audiencia"],
+            ValidIssuer = "HabitosApp",
+            ValidAudience = "HabitosAppUsuarios",
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(claveJwt))
         };
     });
@@ -73,13 +83,25 @@ builder.Services.AddSwaggerGen(opciones =>
     });
 });
 
-// CORS para el frontend React
+// CORS para el frontend React (desarrollo y producción)
 builder.Services.AddCors(opciones =>
 {
     opciones.AddPolicy("politicaFrontend", politica =>
-        politica.WithOrigins("http://localhost:5173")
-                .AllowAnyHeader()
-                .AllowAnyMethod());
+    {
+        var origenes = new List<string> { "http://localhost:5173" };
+        
+        // Añadir URL de producción si existe
+        var frontendUrl = Environment.GetEnvironmentVariable("FRONTEND_URL");
+        if (!string.IsNullOrEmpty(frontendUrl) && frontendUrl != "http://localhost:5173")
+        {
+            origenes.Add(frontendUrl);
+        }
+        
+        politica.WithOrigins(origenes.ToArray())
+               .AllowAnyHeader()
+               .AllowAnyMethod()
+               .AllowCredentials();
+    });
 });
 
 var app = builder.Build();
