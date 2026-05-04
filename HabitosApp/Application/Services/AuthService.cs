@@ -70,9 +70,11 @@ namespace HabitosApp.Application.Services
 
         private string generarToken(Usuario usuario)
         {
-            var clave = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(_configuracion["Jwt:clave"]!));
-
+            // Usar la misma clave que en Program.cs
+            var claveJwt = Environment.GetEnvironmentVariable("JWT_SECRET") ?? 
+                          "HabitosApp_SuperSecretKey_2024_MinLength32Chars_ForProduction";
+            
+            var clave = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(claveJwt));
             var credenciales = new SigningCredentials(clave, SecurityAlgorithms.HmacSha256);
 
             var claims = new[]
@@ -83,11 +85,10 @@ namespace HabitosApp.Application.Services
             };
 
             var token = new JwtSecurityToken(
-                issuer: _configuracion["Jwt:emisor"],
-                audience: _configuracion["Jwt:audiencia"],
+                issuer: "HabitosApp",
+                audience: "HabitosAppUsuarios",
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(
-                    double.Parse(_configuracion["Jwt:expiracionHoras"]!)),
+                expires: DateTime.UtcNow.AddHours(24),
                 signingCredentials: credenciales
             );
 
