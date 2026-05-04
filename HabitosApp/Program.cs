@@ -31,6 +31,20 @@ else
 {
     Console.WriteLine($"Using PostgreSQL database: {connectionString.Substring(0, Math.Min(50, connectionString.Length))}...");
     
+    // Verificar que la cadena de conexión sea válida
+    try
+    {
+        var connectionStringBuilder = new Npgsql.NpgsqlConnectionStringBuilder(connectionString);
+        Console.WriteLine($"Database: {connectionStringBuilder.Database}");
+        Console.WriteLine($"Host: {connectionStringBuilder.Host}");
+        Console.WriteLine($"Port: {connectionStringBuilder.Port}");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error parsing connection string: {ex.Message}");
+        throw;
+    }
+    
     builder.Services.AddDbContext<AppDbContext>(opciones =>
         opciones.UseNpgsql(connectionString));
 }
@@ -150,13 +164,22 @@ using (var scope = app.Services.CreateScope())
     
     try
     {
+        Console.WriteLine("Attempting to connect to database...");
+        await contexto.Database.CanConnectAsync();
+        Console.WriteLine("Database connection successful!");
+        
+        Console.WriteLine("Creating database if not exists...");
         await contexto.Database.EnsureCreatedAsync();
+        Console.WriteLine("Database created successfully!");
+        
+        Console.WriteLine("Initializing seed data...");
         await SeedData.inicializarAsync(contexto);
         Console.WriteLine("Database initialized successfully");
     }
     catch (Exception ex)
     {
         Console.WriteLine($"Database initialization failed: {ex.Message}");
+        Console.WriteLine($"Stack trace: {ex.StackTrace}");
         // Continue without seeding data
     }
 }
