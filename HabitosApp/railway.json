@@ -1,9 +1,8 @@
 {
   "build": {
-    "builder": "NIXPACKS"
+    "builder": "DOCKERFILE"
   },
   "deploy": {
-    "startCommand": "dotnet HabitosApp.dll",
     "restartPolicyType": "ON_FAILURE"
   }
 }

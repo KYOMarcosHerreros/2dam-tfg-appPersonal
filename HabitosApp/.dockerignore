@@ -1,0 +1,10 @@
+bin/
+obj/
+.vs/
+*.user
+.env
+appsettings.Development.json
+Dockerfile
+.dockerignore
+README.md
+*.md
