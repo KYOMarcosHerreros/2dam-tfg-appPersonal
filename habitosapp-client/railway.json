@@ -1,12 +1,8 @@
 {
   "build": {
-    "builder": "NIXPACKS"
+    "builder": "DOCKERFILE"
   },
   "deploy": {
-    "startCommand": "npm run preview",
     "restartPolicyType": "ON_FAILURE"
-  },
-  "variables": {
-    "NODE_VERSION": "22"
   }
 }
