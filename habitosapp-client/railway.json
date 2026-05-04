@@ -7,6 +7,6 @@
     "restartPolicyType": "ON_FAILURE"
   },
   "variables": {
-    "NODE_VERSION": "20"
+    "NODE_VERSION": "22"
   }
 }
