@@ -1,14 +1,2 @@
-[phases.setup]
-nixPkgs = ['nodejs_20', 'npm-10_x']
-
-[phases.install]
-cmds = ['rm -f package-lock.json', 'npm install']
-
-[phases.build]
-cmds = ['npm run build']
-
-[phases.start]
-cmd = 'npm run preview -- --host 0.0.0.0 --port $PORT'
-
 [variables]
-NODE_ENV = 'production'
+NODE_VERSION = '20.18.0'
