@@ -15,8 +15,8 @@ namespace HabitosApp.Application.Controllers
             _authService = authService;
         }
 
-        [HttpPost("registro")]
-        public async Task<IActionResult> Registro([FromBody] RegistroDto dto)
+        [HttpPost("registrar")]
+        public async Task<IActionResult> Registrar([FromBody] RegistroDto dto)
         {
             try
             {
