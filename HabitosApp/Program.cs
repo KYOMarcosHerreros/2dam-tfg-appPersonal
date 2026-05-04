@@ -11,9 +11,6 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Cargar variables de entorno desde .env
-DotNetEnv.Env.Load();
-
 // Configuración para Railway - Puerto dinámico
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
@@ -22,7 +19,7 @@ builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL") ?? 
                       "Server=(localdb)\\MSSQLLocalDB;Database=HabitosAppDB;Trusted_Connection=True;TrustServerCertificate=True";
 builder.Services.AddDbContext<AppDbContext>(opciones =>
-    opciones.UseNpgsql(connectionString));
+    opciones.UseSqlServer(connectionString));
 
 // JWT
 var claveJwt = Environment.GetEnvironmentVariable("JWT_SECRET") ?? 
