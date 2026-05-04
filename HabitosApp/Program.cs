@@ -18,8 +18,18 @@ builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 // Base de datos
 var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL") ?? 
                       "Server=(localdb)\\MSSQLLocalDB;Database=HabitosAppDB;Trusted_Connection=True;TrustServerCertificate=True";
-builder.Services.AddDbContext<AppDbContext>(opciones =>
-    opciones.UseSqlServer(connectionString));
+
+// Usar PostgreSQL si DATABASE_URL está presente, sino SQL Server
+if (Environment.GetEnvironmentVariable("DATABASE_URL") != null)
+{
+    builder.Services.AddDbContext<AppDbContext>(opciones =>
+        opciones.UseNpgsql(connectionString));
+}
+else
+{
+    builder.Services.AddDbContext<AppDbContext>(opciones =>
+        opciones.UseSqlServer(connectionString));
+}
 
 // JWT
 var claveJwt = Environment.GetEnvironmentVariable("JWT_SECRET") ?? 
