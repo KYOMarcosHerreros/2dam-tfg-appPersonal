@@ -141,6 +141,13 @@ builder.Services.AddCors(opciones =>
 
 var app = builder.Build();
 
+// Debug: Mostrar todas las variables de entorno
+Console.WriteLine("=== ENVIRONMENT VARIABLES DEBUG ===");
+Console.WriteLine($"DATABASE_URL: {Environment.GetEnvironmentVariable("DATABASE_URL") ?? "NULL"}");
+Console.WriteLine($"JWT_SECRET: {(string.IsNullOrEmpty(Environment.GetEnvironmentVariable("JWT_SECRET")) ? "NULL" : "SET")}");
+Console.WriteLine($"GROKKEY: {(string.IsNullOrEmpty(Environment.GetEnvironmentVariable("GROKKEY")) ? "NULL" : "SET")}");
+Console.WriteLine("=====================================");
+
 // Habilitar Swagger en producción para Railway
 app.UseSwagger();
 app.UseSwaggerUI(c =>
