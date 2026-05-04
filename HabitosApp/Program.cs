@@ -18,6 +18,8 @@ builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 // Base de datos
 var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
 
+Console.WriteLine($"DATABASE_URL environment variable: {(string.IsNullOrEmpty(connectionString) ? "NOT SET" : "SET")}");
+
 if (string.IsNullOrEmpty(connectionString))
 {
     // Fallback para desarrollo local
@@ -38,15 +40,20 @@ else
         Console.WriteLine($"Database: {connectionStringBuilder.Database}");
         Console.WriteLine($"Host: {connectionStringBuilder.Host}");
         Console.WriteLine($"Port: {connectionStringBuilder.Port}");
+        
+        builder.Services.AddDbContext<AppDbContext>(opciones =>
+            opciones.UseNpgsql(connectionString));
     }
     catch (Exception ex)
     {
         Console.WriteLine($"Error parsing connection string: {ex.Message}");
-        throw;
+        Console.WriteLine("Falling back to local SQL Server");
+        
+        // Fallback a SQL Server local si PostgreSQL falla
+        var fallbackConnection = "Server=(localdb)\\MSSQLLocalDB;Database=HabitosAppDB;Trusted_Connection=True;TrustServerCertificate=True";
+        builder.Services.AddDbContext<AppDbContext>(opciones =>
+            opciones.UseSqlServer(fallbackConnection));
     }
-    
-    builder.Services.AddDbContext<AppDbContext>(opciones =>
-        opciones.UseNpgsql(connectionString));
 }
 
 // JWT
