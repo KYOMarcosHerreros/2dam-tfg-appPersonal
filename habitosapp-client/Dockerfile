@@ -5,8 +5,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci
+# Install dependencies (use npm install instead of npm ci)
+RUN npm install
 
 # Copy source code
 COPY . .
@@ -21,17 +21,20 @@ RUN npm run build
 FROM nginx:alpine
 WORKDIR /usr/share/nginx/html
 
+# Install gettext for envsubst
+RUN apk add --no-cache gettext
+
 # Remove default nginx files
 RUN rm -rf ./*
 
 # Copy built app from build stage
 COPY --from=build /app/dist .
 
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/nginx.conf
+# Copy nginx configuration template
+COPY nginx.conf.template /etc/nginx/nginx.conf.template
 
-# Expose port 80
-EXPOSE 80
+# Expose Railway's dynamic port
+EXPOSE $PORT
 
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Start nginx with dynamic port substitution
+CMD ["sh", "-c", "envsubst '$$PORT' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"]
