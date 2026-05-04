@@ -71,7 +71,7 @@ export default function LoginPage() {
         toast.success(`¡Bienvenido de vuelta, ${data.nombre}!`)
         navigate('/dashboard')
       } else {
-        await cliente.post('/auth/registro', {
+        await cliente.post('/auth/registrar', {
           nombre: form.nombre,
           email: form.email,
           password: form.password
