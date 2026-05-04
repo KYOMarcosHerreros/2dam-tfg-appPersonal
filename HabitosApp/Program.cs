@@ -117,16 +117,28 @@ builder.Services.AddCors(opciones =>
 
 var app = builder.Build();
 
+// Habilitar Swagger en producción para Railway
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "HabitosApp API V1");
+    c.RoutePrefix = "swagger";
+});
+
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    // Configuraciones adicionales para desarrollo si las hay
 }
 
 //app.UseHttpsRedirection();
 app.UseCors("politicaFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Ruta de prueba para verificar que la API funciona
+app.MapGet("/", () => "HabitosApp API está funcionando! Ve a /swagger para la documentación.");
+app.MapGet("/health", () => new { status = "OK", timestamp = DateTime.UtcNow });
+
 app.MapControllers();
 
 using (var scope = app.Services.CreateScope())
