@@ -16,19 +16,23 @@ var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 // Base de datos
-var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL") ?? 
-                      "Server=(localdb)\\MSSQLLocalDB;Database=HabitosAppDB;Trusted_Connection=True;TrustServerCertificate=True";
+var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
 
-// Usar PostgreSQL si DATABASE_URL está presente, sino SQL Server
-if (Environment.GetEnvironmentVariable("DATABASE_URL") != null)
+if (string.IsNullOrEmpty(connectionString))
 {
+    // Fallback para desarrollo local
+    connectionString = "Server=(localdb)\\MSSQLLocalDB;Database=HabitosAppDB;Trusted_Connection=True;TrustServerCertificate=True";
+    Console.WriteLine("Using local SQL Server database");
+    
     builder.Services.AddDbContext<AppDbContext>(opciones =>
-        opciones.UseNpgsql(connectionString));
+        opciones.UseSqlServer(connectionString));
 }
 else
 {
+    Console.WriteLine($"Using PostgreSQL database: {connectionString.Substring(0, Math.Min(50, connectionString.Length))}...");
+    
     builder.Services.AddDbContext<AppDbContext>(opciones =>
-        opciones.UseSqlServer(connectionString));
+        opciones.UseNpgsql(connectionString));
 }
 
 // JWT
@@ -128,7 +132,18 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var contexto = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await SeedData.inicializarAsync(contexto);
+    
+    try
+    {
+        await contexto.Database.EnsureCreatedAsync();
+        await SeedData.inicializarAsync(contexto);
+        Console.WriteLine("Database initialized successfully");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Database initialization failed: {ex.Message}");
+        // Continue without seeding data
+    }
 }
 
 app.Run();
