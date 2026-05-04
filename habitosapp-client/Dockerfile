@@ -1,31 +1,37 @@
 # Build stage
-FROM node:22-alpine AS build
+FROM node:20-alpine AS build
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies with verbose logging
-RUN npm ci --verbose
+# Install dependencies
+RUN npm ci
 
 # Copy source code
 COPY . .
 
-# Build with verbose logging
-RUN npm run build --verbose
+# Set environment variable for build
+ENV NODE_ENV=production
 
-# Production stage
-FROM node:22-alpine
-WORKDIR /app
+# Build the app
+RUN npm run build
 
-# Install serve globally
-RUN npm install -g serve
+# Production stage - Use nginx to serve static files
+FROM nginx:alpine
+WORKDIR /usr/share/nginx/html
 
-# Copy built app
-COPY --from=build /app/dist ./dist
+# Remove default nginx files
+RUN rm -rf ./*
 
-# Expose port
-EXPOSE 3000
+# Copy built app from build stage
+COPY --from=build /app/dist .
 
-# Start the app with serve
-CMD ["serve", "-s", "dist", "-l", "3000"]
+# Copy nginx configuration
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Expose port 80
+EXPOSE 80
+
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]
