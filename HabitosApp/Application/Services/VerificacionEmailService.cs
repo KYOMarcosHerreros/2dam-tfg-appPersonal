@@ -203,7 +203,7 @@ namespace HabitosApp.Application.Services
                         subject = "🔐 Verificación en 2 pasos - HabitosApp"
                     }
                 },
-                from = new { email = "noreply@habitosapp.com", name = nombreRemitente ?? "HabitosApp" },
+                from = new { email = "from@example.com", name = nombreRemitente ?? "HabitosApp" },
                 content = new[]
                 {
                     new
