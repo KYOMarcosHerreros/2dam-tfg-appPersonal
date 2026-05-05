@@ -30,6 +30,9 @@ namespace HabitosApp.Application.Services
             if (usuario == null)
                 throw new Exception("Usuario no encontrado");
 
+            // Permitir re-verificación incluso si ya está verificado
+            // Esto es útil si el usuario cambió de email o quiere reactivar notificaciones
+            
             // Generar token único
             var token = GenerarTokenSeguro();
             
@@ -41,7 +44,11 @@ namespace HabitosApp.Application.Services
             // Enviar email de verificación
             await enviarEmailVerificacion(usuario.Email, usuario.Nombre, token);
 
-            return "Email de verificación enviado correctamente";
+            var mensaje = usuario.EmailVerificado 
+                ? "Email de re-verificación enviado correctamente" 
+                : "Email de verificación enviado correctamente";
+                
+            return mensaje;
         }
 
         public async Task<bool> confirmarVerificacionEmail(int usuarioId, string token)
