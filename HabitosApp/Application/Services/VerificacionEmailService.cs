@@ -325,7 +325,6 @@ namespace HabitosApp.Application.Services
                 Console.WriteLine("✅ Autenticación SMTP exitosa");
                 
                 Console.WriteLine($"📤 Enviando email a: {destinatario}");
-                Console.WriteLine($"📤 Desde: {email.From.FirstOrDefault()?.Address}");
                 await smtp.SendAsync(email);
                 Console.WriteLine("✅ Email enviado exitosamente");
                 
