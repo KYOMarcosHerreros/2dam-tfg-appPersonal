@@ -231,19 +231,28 @@ Categorías posibles: Salud física, Bienestar mental, Deporte, Productividad, C
         {
             try
             {
+                // Leer configuración, con fallback a variables de entorno
                 var apiKey = _configuracion["AI:apiKey"];
-                var modelo = _configuracion["AI:modelo"];
-                var apiUrl = _configuracion["AI:apiUrl"];
+                if (string.IsNullOrEmpty(apiKey))
+                {
+                    apiKey = Environment.GetEnvironmentVariable("GROKKEY");
+                    Console.WriteLine("[DEBUG] Usando GROKKEY desde variable de entorno");
+                }
+                
+                var modelo = _configuracion["AI:modelo"] ?? "llama-3.1-70b-versatile";
+                var apiUrl = _configuracion["AI:apiUrl"] ?? "https://api.groq.com/openai/v1/chat/completions";
+
+                Console.WriteLine($"[DEBUG] API Key configurada: {(!string.IsNullOrEmpty(apiKey) ? "SÍ" : "NO")}");
+                Console.WriteLine($"[DEBUG] Modelo: {modelo}");
+                Console.WriteLine($"[DEBUG] URL: {apiUrl}");
 
                 if (string.IsNullOrEmpty(apiKey))
                 {
-                    Console.WriteLine("[ERROR] API Key no configurada");
-                    throw new Exception("API Key no configurada en appsettings.json");
+                    Console.WriteLine("[ERROR] API Key no encontrada ni en appsettings.json ni en GROKKEY");
+                    throw new Exception("API Key no configurada. Verifica que GROKKEY esté configurada en Railway.");
                 }
 
-                Console.WriteLine($"[DEBUG] Usando modelo: {modelo}");
-                Console.WriteLine($"[DEBUG] URL: {apiUrl}");
-                Console.WriteLine($"[DEBUG] Enviando {mensajes.Count} mensajes");
+                Console.WriteLine($"[DEBUG] Enviando {mensajes.Count} mensajes a Groq API");
 
                 // Formato OpenAI-compatible (Groq usa este formato)
                 var requestBody = new
