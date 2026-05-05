@@ -127,7 +127,7 @@ namespace HabitosApp.Application.Services
                 Console.WriteLine($"📧 INICIO - Destinatario: {destinatario}");
                 Console.WriteLine($"📧 INICIO - Nombre: {nombre}");
                 Console.WriteLine($"📧 INICIO - Token: {token}");
-                Console.WriteLine("📧 VERSIÓN: 2.0 - SendGrid Sandbox Fix");
+                Console.WriteLine("📧 VERSIÓN: 3.0 - SendGrid HTTP API (No SMTP)");
                 
                 // Leer configuración con fallback a variables de entorno
                 var emailServidor = _configuracion["Email:servidor"];
@@ -135,20 +135,6 @@ namespace HabitosApp.Application.Services
                 {
                     emailServidor = Environment.GetEnvironmentVariable("EMAIL_SERVIDOR");
                     Console.WriteLine("[DEBUG] Usando EMAIL_SERVIDOR desde variable de entorno");
-                }
-                
-                var emailPuerto = _configuracion["Email:puerto"];
-                if (string.IsNullOrEmpty(emailPuerto))
-                {
-                    emailPuerto = Environment.GetEnvironmentVariable("EMAIL_PUERTO");
-                    Console.WriteLine("[DEBUG] Usando EMAIL_PUERTO desde variable de entorno");
-                }
-                
-                var emailUsuario = _configuracion["Email:usuario"];
-                if (string.IsNullOrEmpty(emailUsuario))
-                {
-                    emailUsuario = Environment.GetEnvironmentVariable("EMAIL_USUARIO");
-                    Console.WriteLine("[DEBUG] Usando EMAIL_USUARIO desde variable de entorno");
                 }
                 
                 var emailPassword = _configuracion["Email:password"];
@@ -167,20 +153,13 @@ namespace HabitosApp.Application.Services
 
                 Console.WriteLine($"[DEBUG] Configuración de email:");
                 Console.WriteLine($"  - Servidor: {emailServidor ?? "NULL"}");
-                Console.WriteLine($"  - Puerto: {emailPuerto ?? "NULL"}");
-                Console.WriteLine($"  - Usuario: {emailUsuario ?? "NULL"}");
-                Console.WriteLine($"  - Password: {(string.IsNullOrEmpty(emailPassword) ? "NULL" : "SET")}");
+                Console.WriteLine($"  - API Key: {(string.IsNullOrEmpty(emailPassword) ? "NULL" : "SET")}");
                 Console.WriteLine($"  - Nombre remitente: {emailNombreRemitente ?? "NULL"}");
 
-                if (string.IsNullOrEmpty(emailServidor) || string.IsNullOrEmpty(emailUsuario) || string.IsNullOrEmpty(emailPassword))
+                if (string.IsNullOrEmpty(emailPassword))
                 {
-                    var error = "Configuración de email incompleta. Variables faltantes: ";
-                    if (string.IsNullOrEmpty(emailServidor)) error += "EMAIL_SERVIDOR ";
-                    if (string.IsNullOrEmpty(emailUsuario)) error += "EMAIL_USUARIO ";
-                    if (string.IsNullOrEmpty(emailPassword)) error += "EMAIL_PASSWORD ";
-                    
-                    Console.WriteLine($"❌ {error}");
-                    throw new Exception(error);
+                    Console.WriteLine($"❌ SendGrid API Key no configurada");
+                    throw new Exception("SendGrid API Key no configurada");
                 }
 
                 // Detectar si es SendGrid
@@ -188,36 +167,49 @@ namespace HabitosApp.Application.Services
                 
                 if (esSendGrid)
                 {
-                    Console.WriteLine("📧 Detectado SendGrid - usando configuración optimizada");
-                }
-
-                var email = new MimeMessage();
-                
-                // Para SendGrid, usar un remitente que no requiera verificación
-                if (esSendGrid)
-                {
-                    // Usar el dominio sandbox de SendGrid que siempre funciona
-                    email.From.Add(new MailboxAddress(
-                        emailNombreRemitente ?? "HabitosApp",
-                        "test@sandbox.sendgrid.net")); // Dominio sandbox de SendGrid
-                    Console.WriteLine("📧 Usando remitente sandbox de SendGrid");
+                    Console.WriteLine("📧 Usando SendGrid HTTP API - evitando bloqueo SMTP");
+                    await enviarEmailConSendGridAPI(destinatario, nombre, token, emailPassword, emailNombreRemitente);
                 }
                 else
                 {
-                    email.From.Add(new MailboxAddress(
-                        emailNombreRemitente ?? "HabitosApp",
-                        emailUsuario));
+                    Console.WriteLine("📧 Usando SMTP tradicional");
+                    await enviarEmailConSMTP(destinatario, nombre, token, emailServidor, emailPassword, emailNombreRemitente);
                 }
-                email.To.Add(new MailboxAddress(nombre, destinatario));
-                email.Subject = "🔐 Verificación en 2 pasos - HabitosApp";
 
-                var frontendUrl = Environment.GetEnvironmentVariable("FRONTEND_URL") ?? "http://localhost:5173";
-                var backendUrl = "https://back-production-4f9d.up.railway.app";
-                var urlVerificacion = $"{backendUrl}/api/VerificacionEmail/confirmar/{token}";
+                Console.WriteLine($"🎉 Email de verificación enviado exitosamente a {destinatario}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error enviando email de verificación: {ex.Message}");
+                throw new Exception($"Error enviando email de verificación: {ex.Message}");
+            }
+        }
 
-                Console.WriteLine($"🔗 URL de verificación: {urlVerificacion}");
+        private async Task enviarEmailConSendGridAPI(string destinatario, string nombre, string token, string apiKey, string nombreRemitente)
+        {
+            var frontendUrl = Environment.GetEnvironmentVariable("FRONTEND_URL") ?? "http://localhost:5173";
+            var backendUrl = "https://back-production-4f9d.up.railway.app";
+            var urlVerificacion = $"{backendUrl}/api/VerificacionEmail/confirmar/{token}";
 
-                var htmlBody = $@"
+            Console.WriteLine($"🔗 URL de verificación: {urlVerificacion}");
+
+            var emailData = new
+            {
+                personalizations = new[]
+                {
+                    new
+                    {
+                        to = new[] { new { email = destinatario, name = nombre } },
+                        subject = "🔐 Verificación en 2 pasos - HabitosApp"
+                    }
+                },
+                from = new { email = "noreply@habitosapp.com", name = nombreRemitente ?? "HabitosApp" },
+                content = new[]
+                {
+                    new
+                    {
+                        type = "text/html",
+                        value = $@"
 <!DOCTYPE html>
 <html>
 <head>
@@ -249,26 +241,10 @@ namespace HabitosApp.Application.Services
                 Para confirmar que eres tú, necesitamos verificar tu dirección de correo.
             </p>
 
-            <div style='background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 20px; margin: 20px 0;'>
-                <p style='color: #856404; margin: 0; font-size: 14px; text-align: center;'>
-                    🔒 <strong>Importante:</strong> Solo haz clic si solicitaste esta verificación
-                </p>
-            </div>
-
             <div style='text-align: center; margin: 30px 0;'>
                 <a href='{urlVerificacion}' style='background: linear-gradient(135deg, #22c55e, #16a34a); color: white; padding: 15px 30px; text-decoration: none; border-radius: 25px; font-weight: bold; display: inline-block; font-size: 16px;'>
                     ✅ Verificar mi Email
                 </a>
-            </div>
-
-            <div style='background-color: #f8f9ff; border-radius: 8px; padding: 20px; margin: 20px 0;'>
-                <p style='color: #666; margin: 0; font-size: 14px;'>
-                    <strong>¿Qué pasará después?</strong><br>
-                    • Tu email quedará verificado<br>
-                    • Se activarán automáticamente las notificaciones<br>
-                    • Empezarás a recibir consejos diarios de EliasHealthy<br>
-                    • Recibirás recordatorios útiles para mantener tus hábitos
-                </p>
             </div>
 
             <p style='color: #999; font-size: 12px; margin: 20px 0 0 0;'>
@@ -285,59 +261,39 @@ namespace HabitosApp.Application.Services
         </div>
     </div>
 </body>
-</html>";
-
-                var builder = new BodyBuilder();
-                builder.HtmlBody = htmlBody;
-                builder.TextBody = $"Verificación de email para {nombre}. Usa este enlace: {urlVerificacion}";
-                email.Body = builder.ToMessageBody();
-
-                using var smtp = new SmtpClient();
-                
-                Console.WriteLine($"🔌 Conectando a servidor SMTP: {emailServidor}:{emailPuerto}");
-                
-                // Configurar timeouts más largos
-                smtp.Timeout = 60000; // 60 segundos
-                
-                // Probar con SSL en puerto 465 si es Gmail
-                if (emailServidor?.Contains("gmail") == true && emailPuerto == "587")
-                {
-                    Console.WriteLine("🔄 Intentando conexión SSL en puerto 465 para Gmail...");
-                    try
-                    {
-                        await smtp.ConnectAsync(emailServidor, 465, SecureSocketOptions.SslOnConnect);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"❌ Falló SSL 465: {ex.Message}");
-                        Console.WriteLine("🔄 Intentando TLS en puerto 587...");
-                        await smtp.ConnectAsync(emailServidor, 587, SecureSocketOptions.StartTls);
+</html>"
                     }
                 }
-                else
-                {
-                    await smtp.ConnectAsync(emailServidor, int.Parse(emailPuerto ?? "587"), SecureSocketOptions.StartTls);
-                }
-                Console.WriteLine("✅ Conexión SMTP establecida");
-                
-                Console.WriteLine($"🔐 Autenticando con usuario: {emailUsuario}");
-                await smtp.AuthenticateAsync(emailUsuario, emailPassword);
-                Console.WriteLine("✅ Autenticación SMTP exitosa");
-                
-                Console.WriteLine($"📤 Enviando email a: {destinatario}");
-                await smtp.SendAsync(email);
-                Console.WriteLine("✅ Email enviado exitosamente");
-                
-                await smtp.DisconnectAsync(true);
-                Console.WriteLine("🔌 Desconectado del servidor SMTP");
+            };
 
-                Console.WriteLine($"🎉 Email de verificación enviado exitosamente a {destinatario}");
-            }
-            catch (Exception ex)
+            using var httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey);
+            httpClient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+
+            var json = System.Text.Json.JsonSerializer.Serialize(emailData);
+            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+
+            Console.WriteLine("📤 Enviando email via SendGrid HTTP API...");
+            var response = await httpClient.PostAsync("https://api.sendgrid.com/v3/mail/send", content);
+
+            if (response.IsSuccessStatusCode)
             {
-                Console.WriteLine($"❌ Error enviando email de verificación: {ex.Message}");
-                throw new Exception($"Error enviando email de verificación: {ex.Message}");
+                Console.WriteLine("✅ Email enviado exitosamente via HTTP API");
             }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"❌ Error HTTP API: {response.StatusCode} - {errorContent}");
+                throw new Exception($"SendGrid API Error: {response.StatusCode} - {errorContent}");
+            }
+        }
+
+        private async Task enviarEmailConSMTP(string destinatario, string nombre, string token, string servidor, string password, string nombreRemitente)
+        private async Task enviarEmailConSMTP(string destinatario, string nombre, string token, string servidor, string password, string nombreRemitente)
+        {
+            // Método SMTP original como fallback
+            Console.WriteLine("⚠️ Usando SMTP - puede fallar en Railway por bloqueo de puertos");
+            throw new Exception("SMTP no disponible en Railway - usar SendGrid HTTP API");
         }
     }
 }
