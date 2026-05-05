@@ -20,7 +20,7 @@ namespace HabitosApp.Controllers
         [HttpGet("ping")]
         public IActionResult Ping()
         {
-            return Ok("pong");
+            return Ok(new { mensaje = "pong", timestamp = DateTime.UtcNow });
         }
 
         [HttpGet("test")]
