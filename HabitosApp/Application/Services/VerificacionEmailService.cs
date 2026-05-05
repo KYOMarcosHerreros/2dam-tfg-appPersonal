@@ -30,9 +30,6 @@ namespace HabitosApp.Application.Services
             if (usuario == null)
                 throw new Exception("Usuario no encontrado");
 
-            // Permitir re-verificación incluso si ya está verificado
-            // Esto es útil si el usuario cambió de email o quiere reactivar notificaciones
-            
             // Generar token único
             var token = GenerarTokenSeguro();
             
@@ -41,8 +38,19 @@ namespace HabitosApp.Application.Services
             usuario.FechaTokenVerificacion = DateTime.UtcNow;
             await _contexto.SaveChangesAsync();
 
-            // Enviar email de verificación
-            await enviarEmailVerificacion(usuario.Email, usuario.Nombre, token);
+            // Enviar email de verificación de forma asíncrona sin esperar
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await enviarEmailVerificacion(usuario.Email, usuario.Nombre, token);
+                    Console.WriteLine($"✅ Email enviado exitosamente a {usuario.Email}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"❌ Error enviando email a {usuario.Email}: {ex.Message}");
+                }
+            });
 
             var mensaje = usuario.EmailVerificado 
                 ? "Email de re-verificación enviado correctamente" 
@@ -260,8 +268,11 @@ namespace HabitosApp.Application.Services
                 using var smtp = new SmtpClient();
                 
                 Console.WriteLine($"🔌 Conectando a servidor SMTP: {emailServidor}:{emailPuerto}");
+                
+                // Configurar timeouts más largos
+                smtp.Timeout = 60000; // 60 segundos
+                
                 await smtp.ConnectAsync(emailServidor, int.Parse(emailPuerto ?? "587"), SecureSocketOptions.StartTls);
-                smtp.Timeout = 30000; // 30 segundos de timeout
                 Console.WriteLine("✅ Conexión SMTP establecida");
                 
                 Console.WriteLine($"🔐 Autenticando con usuario: {emailUsuario}");
