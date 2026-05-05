@@ -239,7 +239,7 @@ Categorías posibles: Salud física, Bienestar mental, Deporte, Productividad, C
                     Console.WriteLine("[DEBUG] Usando GROKKEY desde variable de entorno");
                 }
                 
-                var modelo = _configuracion["AI:modelo"] ?? "llama-3.1-70b-versatile";
+                var modelo = _configuracion["AI:modelo"] ?? "llama-3.1-8b-instant";
                 var apiUrl = _configuracion["AI:apiUrl"] ?? "https://api.groq.com/openai/v1/chat/completions";
 
                 Console.WriteLine($"[DEBUG] API Key configurada: {(!string.IsNullOrEmpty(apiKey) ? "SÍ" : "NO")}");
