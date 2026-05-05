@@ -112,5 +112,73 @@ namespace HabitosApp.Application.Services
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
+        public async Task<bool> eliminarUsuario(string email)
+        {
+            Console.WriteLine($"🗑️ Buscando usuario para eliminar: {email}");
+            
+            var usuario = await _contexto.Usuarios
+                .FirstOrDefaultAsync(u => u.Email == email);
+
+            if (usuario == null)
+            {
+                Console.WriteLine($"❌ Usuario no encontrado: {email}");
+                return false;
+            }
+
+            Console.WriteLine($"✅ Usuario encontrado: {usuario.Nombre} (ID: {usuario.Id})");
+
+            // Eliminar registros relacionados primero
+            var registrosDiarios = await _contexto.RegistrosDiarios
+                .Where(r => r.UsuarioId == usuario.Id)
+                .ToListAsync();
+            
+            var habitos = await _contexto.Habitos
+                .Where(h => h.UsuarioId == usuario.Id)
+                .ToListAsync();
+            
+            var notificaciones = await _contexto.Notificaciones
+                .Where(n => n.UsuarioId == usuario.Id)
+                .ToListAsync();
+            
+            var mensajesIA = await _contexto.MensajesIA
+                .Where(m => m.UsuarioId == usuario.Id)
+                .ToListAsync();
+
+            Console.WriteLine($"🗑️ Eliminando datos relacionados:");
+            Console.WriteLine($"  - {registrosDiarios.Count} registros diarios");
+            Console.WriteLine($"  - {habitos.Count} hábitos");
+            Console.WriteLine($"  - {notificaciones.Count} notificaciones");
+            Console.WriteLine($"  - {mensajesIA.Count} mensajes de IA");
+
+            // Eliminar en orden correcto (dependencias primero)
+            _contexto.RegistrosDiarios.RemoveRange(registrosDiarios);
+            _contexto.Habitos.RemoveRange(habitos);
+            _contexto.Notificaciones.RemoveRange(notificaciones);
+            _contexto.MensajesIA.RemoveRange(mensajesIA);
+            _contexto.Usuarios.Remove(usuario);
+
+            await _contexto.SaveChangesAsync();
+            
+            Console.WriteLine($"✅ Usuario {email} y todos sus datos eliminados correctamente");
+            return true;
+        }
+
+        public async Task<List<object>> listarUsuarios()
+        {
+            var usuarios = await _contexto.Usuarios
+                .Select(u => new {
+                    u.Id,
+                    u.Nombre,
+                    u.Email,
+                    u.FechaRegistro,
+                    u.EmailVerificado,
+                    u.UltimoAcceso
+                })
+                .OrderByDescending(u => u.FechaRegistro)
+                .ToListAsync();
+
+            return usuarios.Cast<object>().ToList();
+        }
     }
 }

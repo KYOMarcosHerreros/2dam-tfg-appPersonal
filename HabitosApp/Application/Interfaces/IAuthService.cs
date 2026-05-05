@@ -6,5 +6,7 @@ namespace HabitosApp.Application.Interfaces
     {
         Task<RespuestaAuthDto> registrar(RegistroDto dto);
         Task<RespuestaAuthDto> login(LoginDto dto);
+        Task<bool> eliminarUsuario(string email);
+        Task<List<object>> listarUsuarios();
     }
 }
