@@ -83,8 +83,15 @@ export default function PerfilPage() {
 
   const solicitarVerificacionEmail = async () => {
     try {
+      console.log('🔥 FRONTEND - Iniciando solicitud de verificación de email...')
+      
       const token = localStorage.getItem('token')
-      const response = await fetch('/api/VerificacionEmail/solicitar', {
+      console.log('🔥 FRONTEND - Token JWT:', token ? 'PRESENTE' : 'AUSENTE')
+      
+      const url = '/api/VerificacionEmail/solicitar'
+      console.log('🔥 FRONTEND - URL de solicitud:', url)
+      
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -92,14 +99,19 @@ export default function PerfilPage() {
         }
       })
 
+      console.log('🔥 FRONTEND - Respuesta del servidor:', response.status, response.statusText)
+
       if (response.ok) {
+        const data = await response.json()
+        console.log('🔥 FRONTEND - Respuesta exitosa:', data)
         toast.success('📧 Email de verificación enviado. Revisa tu bandeja de entrada.')
       } else {
         const error = await response.json()
+        console.log('🔥 FRONTEND - Error del servidor:', error)
         toast.error(error.mensaje || 'Error al enviar email de verificación')
       }
     } catch (error) {
-      console.error('Error:', error)
+      console.error('🔥 FRONTEND - Error de red:', error)
       toast.error('Error al solicitar verificación de email')
     }
   }
