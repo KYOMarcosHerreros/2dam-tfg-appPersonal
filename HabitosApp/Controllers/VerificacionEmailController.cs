@@ -26,15 +26,8 @@ namespace HabitosApp.Controllers
         [HttpGet("test")]
         public IActionResult Test()
         {
-            Console.WriteLine("🔥🔥🔥 BACKEND - Endpoint /api/VerificacionEmail/test llamado");
+            Console.WriteLine("🔥 BACKEND - Test endpoint llamado");
             return Ok(new { mensaje = "Controlador funcionando", timestamp = DateTime.UtcNow });
-        }
-
-        [HttpPost("test-post")]
-        public IActionResult TestPost()
-        {
-            Console.WriteLine("🔥🔥🔥 BACKEND - Endpoint /api/VerificacionEmail/test-post llamado");
-            return Ok(new { mensaje = "POST funcionando", timestamp = DateTime.UtcNow });
         }
 
         /// <summary>
@@ -46,34 +39,28 @@ namespace HabitosApp.Controllers
         {
             try
             {
-                Console.WriteLine("🔥🔥🔥 BACKEND - Endpoint /api/VerificacionEmail/solicitar llamado");
-                Console.WriteLine($"🔥🔥🔥 BACKEND - Headers recibidos: {string.Join(", ", Request.Headers.Select(h => $"{h.Key}: {h.Value}"))}");
-                Console.WriteLine($"🔥🔥🔥 BACKEND - Método HTTP: {Request.Method}");
-                Console.WriteLine($"🔥🔥🔥 BACKEND - Path: {Request.Path}");
-                Console.WriteLine($"🔥🔥🔥 BACKEND - Query: {Request.QueryString}");
+                Console.WriteLine("🔥 BACKEND - Endpoint /api/VerificacionEmail/solicitar llamado");
                 
                 var usuarioIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                Console.WriteLine($"🔥🔥🔥 BACKEND - Usuario ID del token: {usuarioIdClaim ?? "NULL"}");
-                Console.WriteLine($"🔥🔥🔥 BACKEND - Claims del usuario: {string.Join(", ", User.Claims.Select(c => $"{c.Type}: {c.Value}"))}");
+                Console.WriteLine($"🔥 BACKEND - Usuario ID: {usuarioIdClaim ?? "NULL"}");
                 
                 if (string.IsNullOrEmpty(usuarioIdClaim))
                 {
-                    Console.WriteLine("🔥🔥🔥 BACKEND - Error: No se pudo obtener el ID del usuario del token");
+                    Console.WriteLine("🔥 BACKEND - Error: Token inválido");
                     return Unauthorized(new { error = "Token inválido" });
                 }
                 
                 var usuarioId = int.Parse(usuarioIdClaim);
-                Console.WriteLine($"🔥🔥🔥 BACKEND - Solicitando verificación para usuario ID: {usuarioId}");
+                Console.WriteLine($"🔥 BACKEND - Procesando verificación para usuario: {usuarioId}");
                 
                 var resultado = await _verificacionService.solicitarVerificacionEmail(usuarioId);
                 
-                Console.WriteLine($"🔥🔥🔥 BACKEND - Resultado del servicio: {resultado}");
+                Console.WriteLine($"🔥 BACKEND - Resultado: {resultado}");
                 return Ok(new { mensaje = resultado });
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"🔥🔥🔥 BACKEND - Error en SolicitarVerificacion: {ex.Message}");
-                Console.WriteLine($"🔥🔥🔥 BACKEND - Stack trace: {ex.StackTrace}");
+                Console.WriteLine($"🔥 BACKEND - Error: {ex.Message}");
                 return BadRequest(new { error = ex.Message });
             }
         }
