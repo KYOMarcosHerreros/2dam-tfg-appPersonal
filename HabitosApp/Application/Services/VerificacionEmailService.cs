@@ -289,7 +289,6 @@ namespace HabitosApp.Application.Services
         }
 
         private async Task enviarEmailConSMTP(string destinatario, string nombre, string token, string servidor, string password, string nombreRemitente)
-        private async Task enviarEmailConSMTP(string destinatario, string nombre, string token, string servidor, string password, string nombreRemitente)
         {
             // Método SMTP original como fallback
             Console.WriteLine("⚠️ Usando SMTP - puede fallar en Railway por bloqueo de puertos");
