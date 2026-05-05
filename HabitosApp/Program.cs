@@ -179,7 +179,7 @@ app.UseAuthorization();
 
 // Ruta de prueba para verificar que la API funciona
 app.MapGet("/", () => "HabitosApp API está funcionando! Ve a /swagger para la documentación.");
-app.MapGet("/health", () => new { status = "OK", timestamp = DateTime.UtcNow, version = "1.0.1" });
+app.MapGet("/health", () => new { status = "OK", timestamp = DateTime.UtcNow, version = "1.0.2", email = "sendgrid" });
 
 app.MapControllers();
 
