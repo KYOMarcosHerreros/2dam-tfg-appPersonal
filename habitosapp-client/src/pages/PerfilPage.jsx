@@ -28,6 +28,7 @@ export default function PerfilPage() {
   useEffect(() => {
     cargarPerfil()
     document.title = 'Mi Perfil - HabitosApp'
+    console.log('🔥 PerfilPage mounted - version 1.0.2')
     return () => {
       document.title = 'HabitosApp'
     }
@@ -83,65 +84,50 @@ export default function PerfilPage() {
 
   const solicitarVerificacionEmail = async () => {
     try {
-      console.log('🔥🔥🔥 FRONTEND - Iniciando solicitud de verificación de email...')
+      console.log('🔥 FRONTEND - Iniciando solicitud de verificación de email...')
       
       const token = localStorage.getItem('token')
-      console.log('🔥🔥🔥 FRONTEND - Token JWT:', token ? 'PRESENTE' : 'AUSENTE')
-      
-      // Determinar la URL base correcta
-      let baseUrl = ''
-      if (window.location.origin.includes('localhost')) {
-        baseUrl = 'http://localhost:5000' // Desarrollo local
-      } else {
-        baseUrl = 'https://back-production-4f9d.up.railway.app' // Producción
+      if (!token) {
+        toast.error('No hay sesión activa')
+        return
       }
       
-      const url = `${baseUrl}/api/VerificacionEmail/solicitar`
-      console.log('🔥🔥🔥 FRONTEND - URL completa de solicitud:', url)
-      console.log('🔥🔥🔥 FRONTEND - Origin actual:', window.location.origin)
+      const baseUrl = window.location.origin.includes('localhost') 
+        ? 'http://localhost:5000' 
+        : 'https://back-production-4f9d.up.railway.app'
       
-      const requestOptions = {
+      const url = `${baseUrl}/api/VerificacionEmail/solicitar`
+      console.log('🔥 FRONTEND - URL:', url)
+      
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         }
-      }
-      
-      console.log('🔥🔥🔥 FRONTEND - Opciones de request:', requestOptions)
-      
-      const response = await fetch(url, requestOptions)
+      })
 
-      console.log('🔥🔥🔥 FRONTEND - Respuesta del servidor:', response.status, response.statusText)
-      console.log('🔥🔥🔥 FRONTEND - Content-Type de respuesta:', response.headers.get('content-type'))
-      console.log('🔥🔥🔥 FRONTEND - URL final:', response.url)
+      console.log('🔥 FRONTEND - Status:', response.status)
 
       if (response.ok) {
         const data = await response.json()
-        console.log('🔥🔥🔥 FRONTEND - Respuesta exitosa:', data)
-        toast.success('📧 Email de verificación enviado. Revisa tu bandeja de entrada.')
+        console.log('🔥 FRONTEND - Éxito:', data)
+        toast.success('📧 ' + data.mensaje + '. Revisa tu bandeja de entrada en unos minutos.')
       } else {
         const responseText = await response.text()
-        console.log('🔥🔥🔥 FRONTEND - Respuesta de error (texto):', responseText)
-        
-        // Si recibimos HTML en lugar de JSON, es probable que sea un error de routing
-        if (responseText.includes('<!DOCTYPE html>') || responseText.includes('<html>')) {
-          console.log('🔥🔥🔥 FRONTEND - ERROR: Recibimos HTML en lugar de JSON - problema de routing')
-          toast.error('Error de conexión con el servidor. Verifica la URL del backend.')
-          return
-        }
+        console.log('🔥 FRONTEND - Error response:', responseText)
         
         try {
           const error = JSON.parse(responseText)
-          toast.error(error.mensaje || 'Error al enviar email de verificación')
+          toast.error(error.error || error.mensaje || 'Error al enviar email de verificación')
         } catch {
-          toast.error(`Error del servidor: ${response.status} ${response.statusText}`)
+          toast.error(`Error del servidor (${response.status}). Inténtalo de nuevo.`)
         }
       }
     } catch (error) {
-      console.error('🔥🔥🔥 FRONTEND - Error de red:', error)
-      toast.error('Error al solicitar verificación de email')
+      console.error('🔥 FRONTEND - Error de red:', error)
+      toast.error('Error de conexión. Verifica tu internet e inténtalo de nuevo.')
     }
   }
 
@@ -421,10 +407,11 @@ export default function PerfilPage() {
                   <span className="perfil-switch-titulo">
                     Notificaciones por Email 
                     {form.notificacionesEmail && form.emailVerificado && <span style={{color: '#22c55e', marginLeft: '8px'}}>✓ Activo</span>}
-                    {!form.emailVerificado && <span style={{color: '#f59e0b', marginLeft: '8px'}}>🔒 Requiere verificación</span>}
+                    {!form.emailVerificado && <span style={{color: '#f59e0b', marginLeft: '8px'}}>🔒 Email no verificado</span>}
+                    {form.emailVerificado && !form.notificacionesEmail && <span style={{color: '#6b7280', marginLeft: '8px'}}>⏸️ Desactivado</span>}
                   </span>
                   <span className="perfil-switch-descripcion">
-                    Recibe consejos diarios de EliasHealthy y recordatorios directamente en tu bandeja de entrada
+                    Recibe consejos diarios de EliasHealthy y recordatorios en tu email
                     {!form.emailVerificado && (
                       <div style={{color: '#f59e0b', fontSize: '12px', marginTop: '8px'}}>
                         💡 <button 
@@ -438,40 +425,36 @@ export default function PerfilPage() {
                             textDecoration: 'underline',
                             cursor: modoEdicion ? 'pointer' : 'not-allowed',
                             fontSize: '12px',
-                            padding: '0',
-                            marginRight: '10px'
-                          }}
-                        >
-                          Verificar email primero
-                        </button>
-                        <button 
-                          type="button" 
-                          onClick={async () => {
-                            try {
-                              const baseUrl = window.location.origin.includes('localhost') 
-                                ? 'http://localhost:5000' 
-                                : 'https://back-production-4f9d.up.railway.app'
-                              const response = await fetch(`${baseUrl}/api/VerificacionEmail/test`)
-                              const data = await response.json()
-                              console.log('Test response:', data)
-                              toast.success('Conexión OK: ' + data.mensaje)
-                            } catch (error) {
-                              console.error('Test error:', error)
-                              toast.error('Error de conexión: ' + error.message)
-                            }
-                          }}
-                          style={{
-                            background: 'none',
-                            border: 'none',
-                            color: '#22c55e',
-                            textDecoration: 'underline',
-                            cursor: 'pointer',
-                            fontSize: '12px',
                             padding: '0'
                           }}
                         >
-                          [Test conexión]
-                        </button> para activar esta opción
+                          Verificar email ahora
+                        </button> para activar las notificaciones por email
+                      </div>
+                    )}
+                    {form.emailVerificado && (
+                      <div style={{color: '#22c55e', fontSize: '12px', marginTop: '8px'}}>
+                        ✅ Email verificado correctamente
+                        {modoEdicion && (
+                          <>
+                            {' • '}
+                            <button 
+                              type="button" 
+                              onClick={solicitarVerificacionEmail}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: '#7c6aff',
+                                textDecoration: 'underline',
+                                cursor: 'pointer',
+                                fontSize: '12px',
+                                padding: '0'
+                              }}
+                            >
+                              Re-verificar
+                            </button>
+                          </>
+                        )}
                       </div>
                     )}
                   </span>
