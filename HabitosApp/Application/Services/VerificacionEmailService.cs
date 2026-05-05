@@ -43,12 +43,14 @@ namespace HabitosApp.Application.Services
             {
                 try
                 {
+                    Console.WriteLine($"🔥 BACKGROUND - Iniciando envío de email a {usuario.Email}");
                     await enviarEmailVerificacion(usuario.Email, usuario.Nombre, token);
-                    Console.WriteLine($"✅ Email enviado exitosamente a {usuario.Email}");
+                    Console.WriteLine($"✅ BACKGROUND - Email enviado exitosamente a {usuario.Email}");
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"❌ Error enviando email a {usuario.Email}: {ex.Message}");
+                    Console.WriteLine($"❌ BACKGROUND - Error enviando email a {usuario.Email}: {ex.Message}");
+                    Console.WriteLine($"❌ BACKGROUND - Stack trace: {ex.StackTrace}");
                 }
             });
 
@@ -121,7 +123,10 @@ namespace HabitosApp.Application.Services
         {
             try
             {
-                Console.WriteLine("📧 Iniciando envío de email de verificación...");
+                Console.WriteLine("📧 INICIO - Iniciando proceso de envío de email de verificación...");
+                Console.WriteLine($"📧 INICIO - Destinatario: {destinatario}");
+                Console.WriteLine($"📧 INICIO - Nombre: {nombre}");
+                Console.WriteLine($"📧 INICIO - Token: {token}");
                 
                 // Leer configuración con fallback a variables de entorno
                 var emailServidor = _configuracion["Email:servidor"];
@@ -175,6 +180,14 @@ namespace HabitosApp.Application.Services
                     
                     Console.WriteLine($"❌ {error}");
                     throw new Exception(error);
+                }
+
+                // Detectar si es SendGrid
+                bool esSendGrid = emailServidor?.Contains("sendgrid") == true;
+                
+                if (esSendGrid)
+                {
+                    Console.WriteLine("📧 Detectado SendGrid - usando configuración optimizada");
                 }
 
                 var email = new MimeMessage();
@@ -272,7 +285,25 @@ namespace HabitosApp.Application.Services
                 // Configurar timeouts más largos
                 smtp.Timeout = 60000; // 60 segundos
                 
-                await smtp.ConnectAsync(emailServidor, int.Parse(emailPuerto ?? "587"), SecureSocketOptions.StartTls);
+                // Probar con SSL en puerto 465 si es Gmail
+                if (emailServidor?.Contains("gmail") == true && emailPuerto == "587")
+                {
+                    Console.WriteLine("🔄 Intentando conexión SSL en puerto 465 para Gmail...");
+                    try
+                    {
+                        await smtp.ConnectAsync(emailServidor, 465, SecureSocketOptions.SslOnConnect);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"❌ Falló SSL 465: {ex.Message}");
+                        Console.WriteLine("🔄 Intentando TLS en puerto 587...");
+                        await smtp.ConnectAsync(emailServidor, 587, SecureSocketOptions.StartTls);
+                    }
+                }
+                else
+                {
+                    await smtp.ConnectAsync(emailServidor, int.Parse(emailPuerto ?? "587"), SecureSocketOptions.StartTls);
+                }
                 Console.WriteLine("✅ Conexión SMTP establecida");
                 
                 Console.WriteLine($"🔐 Autenticando con usuario: {emailUsuario}");
