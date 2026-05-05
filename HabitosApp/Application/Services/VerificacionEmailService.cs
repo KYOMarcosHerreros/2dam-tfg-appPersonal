@@ -254,6 +254,7 @@ namespace HabitosApp.Application.Services
                 
                 Console.WriteLine($"🔌 Conectando a servidor SMTP: {emailServidor}:{emailPuerto}");
                 await smtp.ConnectAsync(emailServidor, int.Parse(emailPuerto ?? "587"), SecureSocketOptions.StartTls);
+                smtp.Timeout = 30000; // 30 segundos de timeout
                 Console.WriteLine("✅ Conexión SMTP establecida");
                 
                 Console.WriteLine($"🔐 Autenticando con usuario: {emailUsuario}");

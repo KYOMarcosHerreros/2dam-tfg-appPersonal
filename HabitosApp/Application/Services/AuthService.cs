@@ -46,19 +46,23 @@ namespace HabitosApp.Application.Services
 
             Console.WriteLine($"✅ Usuario registrado: {nuevoUsuario.Nombre} (ID: {nuevoUsuario.Id})");
 
-            // Enviar email de verificación automáticamente
-            try
+            // Enviar email de verificación de forma asíncrona (no bloqueante)
+            _ = Task.Run(async () =>
             {
-                Console.WriteLine($"📧 Enviando email de verificación a: {nuevoUsuario.Email}");
-                await _verificacionEmailService.solicitarVerificacionEmail(nuevoUsuario.Id);
-                Console.WriteLine($"✅ Email de verificación enviado exitosamente");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Error enviando email de verificación: {ex.Message}");
-                // No fallar el registro si el email falla, solo logear el error
-            }
+                try
+                {
+                    Console.WriteLine($"📧 Enviando email de verificación a: {nuevoUsuario.Email}");
+                    await _verificacionEmailService.solicitarVerificacionEmail(nuevoUsuario.Id);
+                    Console.WriteLine($"✅ Email de verificación enviado exitosamente");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"❌ Error enviando email de verificación: {ex.Message}");
+                    // No afecta al registro, solo se logea el error
+                }
+            });
 
+            // Devolver respuesta inmediatamente sin esperar el email
             return new RespuestaAuthDto
             {
                 Token = generarToken(nuevoUsuario),
