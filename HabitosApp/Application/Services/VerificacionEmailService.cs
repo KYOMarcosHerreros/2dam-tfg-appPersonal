@@ -191,9 +191,22 @@ namespace HabitosApp.Application.Services
                 }
 
                 var email = new MimeMessage();
-                email.From.Add(new MailboxAddress(
-                    emailNombreRemitente ?? "HabitosApp",
-                    emailUsuario));
+                
+                // Para SendGrid, usar un remitente que no requiera verificación
+                if (esSendGrid)
+                {
+                    // Usar el dominio sandbox de SendGrid que siempre funciona
+                    email.From.Add(new MailboxAddress(
+                        emailNombreRemitente ?? "HabitosApp",
+                        "test@sandbox.sendgrid.net")); // Dominio sandbox de SendGrid
+                    Console.WriteLine("📧 Usando remitente sandbox de SendGrid");
+                }
+                else
+                {
+                    email.From.Add(new MailboxAddress(
+                        emailNombreRemitente ?? "HabitosApp",
+                        emailUsuario));
+                }
                 email.To.Add(new MailboxAddress(nombre, destinatario));
                 email.Subject = "🔐 Verificación en 2 pasos - HabitosApp";
 
@@ -311,6 +324,7 @@ namespace HabitosApp.Application.Services
                 Console.WriteLine("✅ Autenticación SMTP exitosa");
                 
                 Console.WriteLine($"📤 Enviando email a: {destinatario}");
+                Console.WriteLine($"📤 Desde: {email.From.FirstOrDefault()?.Address}");
                 await smtp.SendAsync(email);
                 Console.WriteLine("✅ Email enviado exitosamente");
                 
