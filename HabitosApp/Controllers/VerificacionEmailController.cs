@@ -96,10 +96,15 @@ namespace HabitosApp.Controllers
         {
             try
             {
+                Console.WriteLine($"🔥 VERIFICACIÓN - Token recibido: {token}");
+                
                 // Buscar el usuario por token
                 var usuario = await _verificacionService.BuscarUsuarioPorToken(token);
+                Console.WriteLine($"🔥 VERIFICACIÓN - Usuario encontrado: {usuario?.Id ?? 0} - {usuario?.Email ?? "NULL"}");
+                
                 if (usuario == null)
                 {
+                    Console.WriteLine("🔥 VERIFICACIÓN - Token no encontrado en base de datos");
                     return Content(@"
                         <!DOCTYPE html>
                         <html>
@@ -122,10 +127,13 @@ namespace HabitosApp.Controllers
                         </html>", "text/html");
                 }
 
+                Console.WriteLine($"🔥 VERIFICACIÓN - Intentando confirmar para usuario {usuario.Id}");
                 var exito = await _verificacionService.confirmarVerificacionEmail(usuario.Id, token);
+                Console.WriteLine($"🔥 VERIFICACIÓN - Resultado de confirmación: {exito}");
                 
                 if (exito)
                 {
+                    Console.WriteLine("🔥 VERIFICACIÓN - ¡Verificación exitosa!");
                     return Content(@"
                         <!DOCTYPE html>
                         <html>
@@ -152,6 +160,7 @@ namespace HabitosApp.Controllers
                 }
                 else
                 {
+                    Console.WriteLine("🔥 VERIFICACIÓN - Falló la confirmación (token expirado o ya usado)");
                     return Content(@"
                         <!DOCTYPE html>
                         <html>
@@ -176,6 +185,7 @@ namespace HabitosApp.Controllers
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"🔥 VERIFICACIÓN - Error: {ex.Message}");
                 return Content($@"
                     <!DOCTYPE html>
                     <html>
