@@ -163,6 +163,16 @@ if (app.Environment.IsDevelopment())
 
 //app.UseHttpsRedirection();
 app.UseCors("politicaFrontend");
+
+// Middleware de logging para debug
+app.Use(async (context, next) =>
+{
+    Console.WriteLine($"🌐 REQUEST: {context.Request.Method} {context.Request.Path}{context.Request.QueryString}");
+    Console.WriteLine($"🌐 Headers: {string.Join(", ", context.Request.Headers.Select(h => $"{h.Key}: {string.Join(", ", h.Value)}"))}");
+    Console.WriteLine($"🌐 Origin: {context.Request.Headers["Origin"].FirstOrDefault() ?? "NULL"}");
+    await next();
+});
+
 app.UseAuthentication();
 app.UseAuthorization();
 

@@ -1,10 +1,11 @@
 bin/
 obj/
 .vs/
+.vscode/
 *.user
 .env
-appsettings.Development.json
-Dockerfile
-.dockerignore
 README.md
 *.md
+test_*.ps1
+verificar_*.ps1
+verificar_*.sh
