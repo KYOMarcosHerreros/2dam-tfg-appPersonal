@@ -15,11 +15,13 @@ namespace HabitosApp.Application.Services
     {
         private readonly AppDbContext _contexto;
         private readonly IConfiguration _configuracion;
+        private readonly IVerificacionEmailService _verificacionEmailService;
 
-        public AuthService(AppDbContext contexto, IConfiguration configuracion)
+        public AuthService(AppDbContext contexto, IConfiguration configuracion, IVerificacionEmailService verificacionEmailService)
         {
             _contexto = contexto;
             _configuracion = configuracion;
+            _verificacionEmailService = verificacionEmailService;
         }
 
         public async Task<RespuestaAuthDto> registrar(RegistroDto dto)
@@ -35,11 +37,27 @@ namespace HabitosApp.Application.Services
                 Nombre = dto.Nombre,
                 Email = dto.Email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-                FechaRegistro = DateTime.UtcNow
+                FechaRegistro = DateTime.UtcNow,
+                EmailVerificado = false // Inicialmente no verificado
             };
 
             _contexto.Usuarios.Add(nuevoUsuario);
             await _contexto.SaveChangesAsync();
+
+            Console.WriteLine($"✅ Usuario registrado: {nuevoUsuario.Nombre} (ID: {nuevoUsuario.Id})");
+
+            // Enviar email de verificación automáticamente
+            try
+            {
+                Console.WriteLine($"📧 Enviando email de verificación a: {nuevoUsuario.Email}");
+                await _verificacionEmailService.solicitarVerificacionEmail(nuevoUsuario.Id);
+                Console.WriteLine($"✅ Email de verificación enviado exitosamente");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error enviando email de verificación: {ex.Message}");
+                // No fallar el registro si el email falla, solo logear el error
+            }
 
             return new RespuestaAuthDto
             {
