@@ -207,7 +207,14 @@ export default function AsistentePage() {
                     {msg.rol === 'user' ? <User size={20} /> : <Bot size={20} />}
                   </div>
                   <div className="mensaje-contenido">
-                    <div className="mensaje-texto">{msg.contenido}</div>
+                    <div className="mensaje-texto">
+                      {msg.contenido.split('\n').map((linea, i) => (
+                        <span key={i}>
+                          {linea}
+                          {i < msg.contenido.split('\n').length - 1 && <br />}
+                        </span>
+                      ))}
+                    </div>
                     <div className="mensaje-hora">{formatearFecha(msg.fechaEnvio)}</div>
                   </div>
                 </motion.div>
