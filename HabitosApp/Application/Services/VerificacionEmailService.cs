@@ -127,6 +127,7 @@ namespace HabitosApp.Application.Services
                 Console.WriteLine($"📧 INICIO - Destinatario: {destinatario}");
                 Console.WriteLine($"📧 INICIO - Nombre: {nombre}");
                 Console.WriteLine($"📧 INICIO - Token: {token}");
+                Console.WriteLine("📧 VERSIÓN: 2.0 - SendGrid Sandbox Fix");
                 
                 // Leer configuración con fallback a variables de entorno
                 var emailServidor = _configuracion["Email:servidor"];
