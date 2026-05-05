@@ -106,16 +106,74 @@ namespace HabitosApp.Application.Services
         {
             try
             {
+                Console.WriteLine("📧 Iniciando envío de email de verificación...");
+                
+                // Leer configuración con fallback a variables de entorno
+                var emailServidor = _configuracion["Email:servidor"];
+                if (string.IsNullOrEmpty(emailServidor))
+                {
+                    emailServidor = Environment.GetEnvironmentVariable("EMAIL_SERVIDOR");
+                    Console.WriteLine("[DEBUG] Usando EMAIL_SERVIDOR desde variable de entorno");
+                }
+                
+                var emailPuerto = _configuracion["Email:puerto"];
+                if (string.IsNullOrEmpty(emailPuerto))
+                {
+                    emailPuerto = Environment.GetEnvironmentVariable("EMAIL_PUERTO");
+                    Console.WriteLine("[DEBUG] Usando EMAIL_PUERTO desde variable de entorno");
+                }
+                
+                var emailUsuario = _configuracion["Email:usuario"];
+                if (string.IsNullOrEmpty(emailUsuario))
+                {
+                    emailUsuario = Environment.GetEnvironmentVariable("EMAIL_USUARIO");
+                    Console.WriteLine("[DEBUG] Usando EMAIL_USUARIO desde variable de entorno");
+                }
+                
+                var emailPassword = _configuracion["Email:password"];
+                if (string.IsNullOrEmpty(emailPassword))
+                {
+                    emailPassword = Environment.GetEnvironmentVariable("EMAIL_PASSWORD");
+                    Console.WriteLine("[DEBUG] Usando EMAIL_PASSWORD desde variable de entorno");
+                }
+                
+                var emailNombreRemitente = _configuracion["Email:nombreRemitente"];
+                if (string.IsNullOrEmpty(emailNombreRemitente))
+                {
+                    emailNombreRemitente = Environment.GetEnvironmentVariable("EMAIL_NOMBRE_REMITENTE");
+                    Console.WriteLine("[DEBUG] Usando EMAIL_NOMBRE_REMITENTE desde variable de entorno");
+                }
+
+                Console.WriteLine($"[DEBUG] Configuración de email:");
+                Console.WriteLine($"  - Servidor: {emailServidor ?? "NULL"}");
+                Console.WriteLine($"  - Puerto: {emailPuerto ?? "NULL"}");
+                Console.WriteLine($"  - Usuario: {emailUsuario ?? "NULL"}");
+                Console.WriteLine($"  - Password: {(string.IsNullOrEmpty(emailPassword) ? "NULL" : "SET")}");
+                Console.WriteLine($"  - Nombre remitente: {emailNombreRemitente ?? "NULL"}");
+
+                if (string.IsNullOrEmpty(emailServidor) || string.IsNullOrEmpty(emailUsuario) || string.IsNullOrEmpty(emailPassword))
+                {
+                    var error = "Configuración de email incompleta. Variables faltantes: ";
+                    if (string.IsNullOrEmpty(emailServidor)) error += "EMAIL_SERVIDOR ";
+                    if (string.IsNullOrEmpty(emailUsuario)) error += "EMAIL_USUARIO ";
+                    if (string.IsNullOrEmpty(emailPassword)) error += "EMAIL_PASSWORD ";
+                    
+                    Console.WriteLine($"❌ {error}");
+                    throw new Exception(error);
+                }
+
                 var email = new MimeMessage();
                 email.From.Add(new MailboxAddress(
-                    _configuracion["Email:nombreRemitente"],
-                    _configuracion["Email:usuario"]));
+                    emailNombreRemitente ?? "HabitosApp",
+                    emailUsuario));
                 email.To.Add(new MailboxAddress(nombre, destinatario));
                 email.Subject = "🔐 Verificación en 2 pasos - HabitosApp";
 
-                var frontendUrl = _configuracion["App:frontendUrl"] ?? "http://localhost:5173";
-                var backendUrl = _configuracion["App:backendUrl"] ?? "https://localhost:7297";
+                var frontendUrl = Environment.GetEnvironmentVariable("FRONTEND_URL") ?? "http://localhost:5173";
+                var backendUrl = "https://back-production-4f9d.up.railway.app";
                 var urlVerificacion = $"{backendUrl}/api/VerificacionEmail/confirmar/{token}";
+
+                Console.WriteLine($"🔗 URL de verificación: {urlVerificacion}");
 
                 var htmlBody = $@"
 <!DOCTYPE html>
@@ -193,17 +251,23 @@ namespace HabitosApp.Application.Services
                 email.Body = builder.ToMessageBody();
 
                 using var smtp = new SmtpClient();
-                await smtp.ConnectAsync(
-                    _configuracion["Email:servidor"],
-                    int.Parse(_configuracion["Email:puerto"]!),
-                    SecureSocketOptions.StartTls);
-                await smtp.AuthenticateAsync(
-                    _configuracion["Email:usuario"],
-                    _configuracion["Email:password"]);
+                
+                Console.WriteLine($"🔌 Conectando a servidor SMTP: {emailServidor}:{emailPuerto}");
+                await smtp.ConnectAsync(emailServidor, int.Parse(emailPuerto ?? "587"), SecureSocketOptions.StartTls);
+                Console.WriteLine("✅ Conexión SMTP establecida");
+                
+                Console.WriteLine($"🔐 Autenticando con usuario: {emailUsuario}");
+                await smtp.AuthenticateAsync(emailUsuario, emailPassword);
+                Console.WriteLine("✅ Autenticación SMTP exitosa");
+                
+                Console.WriteLine($"📤 Enviando email a: {destinatario}");
                 await smtp.SendAsync(email);
+                Console.WriteLine("✅ Email enviado exitosamente");
+                
                 await smtp.DisconnectAsync(true);
+                Console.WriteLine("🔌 Desconectado del servidor SMTP");
 
-                Console.WriteLine($"✅ Email de verificación enviado a {destinatario}");
+                Console.WriteLine($"🎉 Email de verificación enviado exitosamente a {destinatario}");
             }
             catch (Exception ex)
             {

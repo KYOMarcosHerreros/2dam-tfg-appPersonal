@@ -130,10 +130,49 @@ namespace HabitosApp.Application.Services
         {
             try
             {
+                Console.WriteLine("📧 Iniciando envío de notificación por email...");
+                
+                // Leer configuración con fallback a variables de entorno (igual que VerificacionEmailService)
+                var emailServidor = _configuracion["Email:servidor"];
+                if (string.IsNullOrEmpty(emailServidor))
+                {
+                    emailServidor = Environment.GetEnvironmentVariable("EMAIL_SERVIDOR");
+                }
+                
+                var emailPuerto = _configuracion["Email:puerto"];
+                if (string.IsNullOrEmpty(emailPuerto))
+                {
+                    emailPuerto = Environment.GetEnvironmentVariable("EMAIL_PUERTO");
+                }
+                
+                var emailUsuario = _configuracion["Email:usuario"];
+                if (string.IsNullOrEmpty(emailUsuario))
+                {
+                    emailUsuario = Environment.GetEnvironmentVariable("EMAIL_USUARIO");
+                }
+                
+                var emailPassword = _configuracion["Email:password"];
+                if (string.IsNullOrEmpty(emailPassword))
+                {
+                    emailPassword = Environment.GetEnvironmentVariable("EMAIL_PASSWORD");
+                }
+                
+                var emailNombreRemitente = _configuracion["Email:nombreRemitente"];
+                if (string.IsNullOrEmpty(emailNombreRemitente))
+                {
+                    emailNombreRemitente = Environment.GetEnvironmentVariable("EMAIL_NOMBRE_REMITENTE");
+                }
+
+                if (string.IsNullOrEmpty(emailServidor) || string.IsNullOrEmpty(emailUsuario) || string.IsNullOrEmpty(emailPassword))
+                {
+                    Console.WriteLine("❌ Configuración de email incompleta para notificaciones");
+                    throw new Exception("Configuración de email no disponible");
+                }
+
                 var email = new MimeMessage();
                 email.From.Add(new MailboxAddress(
-                    _configuracion["Email:nombreRemitente"],
-                    _configuracion["Email:usuario"]));
+                    emailNombreRemitente ?? "HabitosApp",
+                    emailUsuario));
                 email.To.Add(new MailboxAddress(nombre, destinatario));
                 email.Subject = asunto;
 
@@ -206,15 +245,12 @@ namespace HabitosApp.Application.Services
                 email.Body = builder.ToMessageBody();
 
                 using var smtp = new SmtpClient();
-                await smtp.ConnectAsync(
-                    _configuracion["Email:servidor"],
-                    int.Parse(_configuracion["Email:puerto"]!),
-                    SecureSocketOptions.StartTls);
-                await smtp.AuthenticateAsync(
-                    _configuracion["Email:usuario"],
-                    _configuracion["Email:password"]);
+                await smtp.ConnectAsync(emailServidor, int.Parse(emailPuerto ?? "587"), SecureSocketOptions.StartTls);
+                await smtp.AuthenticateAsync(emailUsuario, emailPassword);
                 await smtp.SendAsync(email);
                 await smtp.DisconnectAsync(true);
+
+                Console.WriteLine($"✅ Notificación por email enviada a {destinatario}");
 
                 // Actualizar fecha de envío en la notificación
                 var notificacionEmail = await _contexto.Notificaciones
