@@ -22,6 +22,18 @@ export function AuthProvider({ children }) {
       })
     }
     setCargando(false)
+
+    // Escuchar evento de logout automático
+    const handleAutoLogout = () => {
+      setToken(null)
+      setUsuario(null)
+    }
+
+    window.addEventListener('auth-logout', handleAutoLogout)
+    
+    return () => {
+      window.removeEventListener('auth-logout', handleAutoLogout)
+    }
   }, [])
 
   const login = (datos) => {

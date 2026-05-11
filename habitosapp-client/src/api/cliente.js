@@ -24,14 +24,17 @@ cliente.interceptors.request.use((config) => {
 
 cliente.interceptors.response.use(
   (response) => response,
-  (error) =>
-    {
+  (error) => {
     console.error('Error en petición:', error)
-    if (error.response?.status === 401)
-    {
+    if (error.response?.status === 401) {
+      // Solo limpiar localStorage, no forzar redirección
+      // La redirección la manejará React Router automáticamente
       localStorage.removeItem('token')
       localStorage.removeItem('usuario')
-      window.location.href = '/login'
+      localStorage.removeItem('chat-mensajes')
+      
+      // Disparar evento personalizado para que el AuthContext se actualice
+      window.dispatchEvent(new Event('auth-logout'))
     }
     return Promise.reject(error)
   }

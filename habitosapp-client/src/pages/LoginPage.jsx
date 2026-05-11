@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
@@ -16,14 +16,37 @@ const reglas = [
 ]
 
 export default function LoginPage() {
+  const { token, cargando } = useAuth()
+  const navigate = useNavigate()
   const [modo, setModo] = useState('login')
   const [verPassword, setVerPassword] = useState(false)
   const [verConfirmar, setVerConfirmar] = useState(false)
-  const [cargando, setCargando] = useState(false)
+  const [cargandoForm, setCargandoForm] = useState(false)
   const [passwordFocused, setPasswordFocused] = useState(false)
   const [form, setForm] = useState({ nombre: '', email: '', password: '', confirmarPassword: '' })
   const { login } = useAuth()
-  const navigate = useNavigate()
+
+  // Si el usuario ya está autenticado, redirigir al dashboard
+  useEffect(() => {
+    if (!cargando && token) {
+      navigate('/dashboard', { replace: true })
+    }
+  }, [token, cargando, navigate])
+
+  // Mostrar loading mientras se verifica la autenticación
+  if (cargando) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        background: 'var(--bg-primary)'
+      }}>
+        <div style={{ color: 'var(--text-primary)' }}>Cargando...</div>
+      </div>
+    )
+  }
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -45,7 +68,7 @@ export default function LoginPage() {
         return
       }
     }
-    setCargando(true)
+    setCargandoForm(true)
     try {
       if (modo === 'login') {
         const { data } = await cliente.post('/auth/login', {
@@ -68,7 +91,7 @@ export default function LoginPage() {
     } catch (error) {
       toast.error(error.response?.data?.mensaje || 'Error al conectar con el servidor')
     } finally {
-      setCargando(false)
+      setCargandoForm(false)
     }
   }
 
@@ -263,11 +286,11 @@ export default function LoginPage() {
           <motion.button
             className="login-boton-principal"
             type="submit"
-            disabled={cargando}
+            disabled={cargandoForm}
             whileHover={{ scale: 1.02, boxShadow: '0 0 24px rgba(34,197,94,0.3)' }}
             whileTap={{ scale: 0.98 }}
           >
-            {cargando ? (
+            {cargandoForm ? (
               <motion.div
                 className="login-spinner"
                 animate={{ rotate: 360 }}

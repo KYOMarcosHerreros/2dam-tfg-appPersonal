@@ -20,8 +20,28 @@ const queryClient = new QueryClient()
 
 function RutaProtegida({ children }) {
   const { token, cargando } = useAuth()
-  if (cargando) return null
-  if (!token) return <Navigate to="/login" />
+  
+  // Mostrar loading mientras se verifica la autenticación
+  if (cargando) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        background: 'var(--bg-primary)'
+      }}>
+        <div style={{ color: 'var(--text-primary)' }}>Cargando...</div>
+      </div>
+    )
+  }
+  
+  // Si no hay token, redirigir al login
+  if (!token) {
+    return <Navigate to="/login" replace />
+  }
+  
+  // Si hay token, mostrar el contenido con Layout
   return <Layout>{children}</Layout>
 }
 
