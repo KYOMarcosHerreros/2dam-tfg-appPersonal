@@ -69,6 +69,7 @@ export default function InicioPage() {
 
       // Obtener estadísticas generales reales
       try {
+        console.log('🔍 Obteniendo estadísticas generales...')
         const responseEstadisticas = await fetch('/api/estadisticas/generales', {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -76,8 +77,9 @@ export default function InicioPage() {
           }
         })
         estadisticasData = await handleApiResponse(responseEstadisticas, 'Error al obtener estadísticas')
+        console.log('✅ Estadísticas obtenidas:', estadisticasData)
       } catch (error) {
-        console.error('Error obteniendo estadísticas:', error)
+        console.error('❌ Error obteniendo estadísticas:', error)
         // Usar valores por defecto si falla
         estadisticasData = {
           totalHabitos: 0,
@@ -121,12 +123,25 @@ export default function InicioPage() {
 
       // Calcular días de uso real (desde el backend)
       let diasUso = estadisticasData?.diasUsoReal || 0
+      console.log('📊 Días de uso calculados:', diasUso)
 
       // Calcular hábitos completados esta semana
       let habitosEstaSemana = 0
       if (estadisticasData && estadisticasData.ultimos7Dias) {
         habitosEstaSemana = estadisticasData.ultimos7Dias.reduce((total, dia) => total + dia.habitosCompletados, 0)
+        console.log('📅 Hábitos esta semana:', habitosEstaSemana, 'de', estadisticasData.ultimos7Dias)
       }
+
+      console.log('📈 Estableciendo estadísticas:', {
+        habitosHoy: estadisticasData?.totalHabitos || 0,
+        habitosCompletados: estadisticasData?.habitosCompletadosHoy || 0,
+        rachaActual: estadisticasData?.rachaActualMaxima || 0,
+        rachaMaxima: estadisticasData?.mejorRacha || 0,
+        recordUso: diasUso,
+        tieneHabitos: habitosData.length > 0,
+        habitosEstaSemana: habitosEstaSemana,
+        totalHabitos: estadisticasData?.totalHabitos || 0
+      })
 
       setEstadisticas({
         habitosHoy: estadisticasData?.totalHabitos || 0,
