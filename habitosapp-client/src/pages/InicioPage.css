@@ -48,9 +48,9 @@
 }
 
 .inicio-widget:hover {
-  transform: translateY(-4px);
-  border-color: rgba(45, 63, 82, 0.5);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
+  border-color: rgba(45, 63, 82, 0.6);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
 .inicio-widget::before {
@@ -86,17 +86,18 @@
   grid-column: 1 / -1; /* Ocupa todo el ancho disponible */
 }
 
-/* Widget de Racha - Naranja/Rojo */
+/* Widget de Racha - Naranja/Rojo - SIN GLOW */
 .inicio-widget-racha {
   background: linear-gradient(135deg, 
-    rgba(249, 115, 22, 0.1) 0%, 
-    rgba(30, 42, 58, 0.9) 100%);
-  border-color: rgba(45, 63, 82, 0.3);
+    rgba(30, 42, 58, 0.8) 0%, 
+    rgba(26, 35, 50, 0.9) 100%);
+  border-color: rgba(45, 63, 82, 0.4);
 }
 
 .inicio-widget-racha:hover {
-  border-color: rgba(249, 115, 22, 0.4);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  border-color: rgba(249, 115, 22, 0.6);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  transform: translateY(-2px);
 }
 
 .inicio-widget-racha .widget-header {
@@ -107,17 +108,18 @@
   color: #f97316;
 }
 
-/* Widget de Record - Dorado */
+/* Widget de Record - Dorado - SIN GLOW */
 .inicio-widget-record {
   background: linear-gradient(135deg, 
-    rgba(245, 158, 11, 0.1) 0%, 
-    rgba(30, 42, 58, 0.9) 100%);
-  border-color: rgba(45, 63, 82, 0.3);
+    rgba(30, 42, 58, 0.8) 0%, 
+    rgba(26, 35, 50, 0.9) 100%);
+  border-color: rgba(45, 63, 82, 0.4);
 }
 
 .inicio-widget-record:hover {
-  border-color: rgba(245, 158, 11, 0.4);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  border-color: rgba(245, 158, 11, 0.6);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  transform: translateY(-2px);
 }
 
 .inicio-widget-record .widget-header {
@@ -128,17 +130,18 @@
   color: #f59e0b;
 }
 
-/* Widget del Tiempo - Azul cielo */
+/* Widget del Tiempo - Azul cielo - SIN GLOW */
 .inicio-widget-tiempo {
   background: linear-gradient(135deg, 
-    rgba(14, 165, 233, 0.1) 0%, 
-    rgba(30, 42, 58, 0.9) 100%);
-  border-color: rgba(45, 63, 82, 0.3);
+    rgba(30, 42, 58, 0.8) 0%, 
+    rgba(26, 35, 50, 0.9) 100%);
+  border-color: rgba(45, 63, 82, 0.4);
 }
 
 .inicio-widget-tiempo:hover {
-  border-color: rgba(14, 165, 233, 0.4);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  border-color: rgba(14, 165, 233, 0.6);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  transform: translateY(-2px);
 }
 
 .inicio-widget-tiempo .widget-header {
@@ -162,17 +165,18 @@
   color: #22c55e;
 }
 
-/* Widget de Estadísticas - Verde oscuro */
+/* Widget de Estadísticas - Esta Semana - SIN GLOW */
 .inicio-widget-stats {
   background: linear-gradient(135deg, 
-    rgba(16, 185, 129, 0.1) 0%, 
-    rgba(30, 42, 58, 0.9) 100%);
-  border-color: rgba(45, 63, 82, 0.3);
+    rgba(30, 42, 58, 0.8) 0%, 
+    rgba(26, 35, 50, 0.9) 100%);
+  border-color: rgba(45, 63, 82, 0.4);
 }
 
 .inicio-widget-stats:hover {
-  border-color: rgba(16, 185, 129, 0.4);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  border-color: rgba(16, 185, 129, 0.6);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  transform: translateY(-2px);
 }
 
 .inicio-widget-stats .widget-header {
@@ -446,3 +450,5 @@
     padding: 16px;
   }
 }
+
+/* Actualización: Widgets sin glow verde - v2.0 */
