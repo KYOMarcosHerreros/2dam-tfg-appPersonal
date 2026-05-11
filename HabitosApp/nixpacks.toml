@@ -8,7 +8,7 @@ cmds = ['dotnet restore']
 cmds = ['dotnet publish -c Release -o out --no-restore']
 
 [phases.start]
-cmd = 'dotnet out/HabitosApp.dll'
+cmd = 'dotnet out/BetterYou.dll'
 
 [variables]
 DOTNET_ROOT = '/nix/store/*-dotnet-sdk-8*/share/dotnet'

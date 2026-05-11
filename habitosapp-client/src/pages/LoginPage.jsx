@@ -5,24 +5,9 @@ import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
 import cliente from '../api/cliente'
 import { Eye, EyeOff, CheckCircle, XCircle } from 'lucide-react'
+import Logo from '../shared/Logo'
+import BrandText from '../shared/BrandText'
 import './LoginPage.css'
-
-function Logo({ size = 36 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="logoGradLogin" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#7c6aff" />
-          <stop offset="100%" stopColor="#ff6ab0" />
-        </linearGradient>
-      </defs>
-      <rect width="36" height="36" rx="10" fill="url(#logoGradLogin)" />
-      <path d="M18 6C13 6 9 10 9 15C9 18.5 11 21.5 14 23V28C14 28.6 14.4 29 15 29H21C21.6 29 22 28.6 22 28V23C25 21.5 27 18.5 27 15C27 10 23 6 18 6Z" fill="white" />
-      <rect x="15" y="24" width="6" height="1.5" rx="0.75" fill="white" />
-      <rect x="15" y="26" width="6" height="1.5" rx="0.75" fill="white" />
-    </svg>
-  )
-}
 
 const reglas = [
   { id: 'longitud', texto: 'Mínimo 8 caracteres', check: (p) => p.length >= 8 },
@@ -100,10 +85,10 @@ export default function LoginPage() {
               width: i === 0 ? '400px' : i === 1 ? '300px' : '350px',
               height: i === 0 ? '400px' : i === 1 ? '300px' : '350px',
               background: i === 0
-                ? 'radial-gradient(circle, rgba(124,106,255,0.15), transparent)'
+                ? 'radial-gradient(circle, rgba(34,197,94,0.15), transparent)'
                 : i === 1
-                  ? 'radial-gradient(circle, rgba(255,106,176,0.12), transparent)'
-                  : 'radial-gradient(circle, rgba(106,255,212,0.08), transparent)',
+                  ? 'radial-gradient(circle, rgba(245,158,11,0.12), transparent)'
+                  : 'radial-gradient(circle, rgba(16,185,129,0.08), transparent)',
             }}
             animate={{ y: [0, -30, 0], scale: [1, 1.08, 1] }}
             transition={{ duration: 6 + i * 2, repeat: Infinity, ease: 'easeInOut', delay: i * 1.5 }}
@@ -124,7 +109,7 @@ export default function LoginPage() {
           transition={{ delay: 0.2 }}
         >
           <Logo size={36} />
-          <span className="login-logo-texto">HabitosApp</span>
+          <BrandText size="normal" className="login-logo-texto" />
         </motion.div>
 
         <motion.div
@@ -211,7 +196,7 @@ export default function LoginPage() {
                   {reglas.map(regla => (
                     <div key={regla.id} className="login-regla-item">
                       {regla.check(form.password)
-                        ? <CheckCircle size={13} color="#aaff00" />
+                        ? <CheckCircle size={13} color="#22c55e" />
                         : <XCircle size={13} color="#555" />
                       }
                       <span className={`login-regla-texto ${regla.check(form.password) ? 'cumplida' : 'no-cumplida'}`}>
@@ -279,7 +264,7 @@ export default function LoginPage() {
             className="login-boton-principal"
             type="submit"
             disabled={cargando}
-            whileHover={{ scale: 1.02, boxShadow: '0 0 24px rgba(170,255,0,0.3)' }}
+            whileHover={{ scale: 1.02, boxShadow: '0 0 24px rgba(34,197,94,0.3)' }}
             whileTap={{ scale: 0.98 }}
           >
             {cargando ? (

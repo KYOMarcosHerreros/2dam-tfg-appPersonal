@@ -29,11 +29,11 @@ export default function InicioPage() {
   const [cargando, setCargando] = useState(true)
 
   useEffect(() => {
-    document.title = 'Inicio - HabitosApp'
+    document.title = 'Inicio - BetterYOU'
     cargarDatos()
     
     return () => {
-      document.title = 'HabitosApp'
+      document.title = 'BetterYOU'
     }
   }, [])
 

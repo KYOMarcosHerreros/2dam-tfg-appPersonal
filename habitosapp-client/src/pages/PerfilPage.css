@@ -150,7 +150,7 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #7c6aff, #ff6ab0);
+  background: linear-gradient(135deg, #22c55e, #f59e0b);
   border: 3px solid white;
   display: flex;
   align-items: center;
@@ -249,7 +249,7 @@
   align-items: center;
   gap: 8px;
   padding: 10px 16px;
-  background: linear-gradient(135deg, #7c6aff, #ff6ab0);
+  background: linear-gradient(135deg, #22c55e, #f59e0b);
   border: none;
   border-radius: 12px;
   color: white;
@@ -326,8 +326,8 @@
 }
 
 .perfil-input:not(:disabled):focus {
-  border-color: #7c6aff;
-  box-shadow: 0 0 0 3px rgba(124, 106, 255, 0.2);
+  border-color: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
   outline: none;
   background: rgba(15, 15, 19, 0.9);
 }
@@ -393,8 +393,8 @@
 }
 
 .perfil-switch input[type="checkbox"]:checked + .perfil-switch-slider {
-  background: linear-gradient(135deg, #7c6aff, #ff6ab0);
-  box-shadow: 0 4px 12px rgba(124, 106, 255, 0.4);
+  background: linear-gradient(135deg, #22c55e, #f59e0b);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
 }
 
 .perfil-switch input[type="checkbox"]:checked + .perfil-switch-slider::before {
@@ -459,7 +459,7 @@
   justify-content: center;
   gap: 10px;
   padding: 16px 24px;
-  background: linear-gradient(135deg, #7c6aff, #ff6ab0);
+  background: linear-gradient(135deg, #22c55e, #f59e0b);
   border: none;
   border-radius: 14px;
   color: white;
@@ -497,8 +497,8 @@
 .perfil-cargando-spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid rgba(124, 106, 255, 0.2);
-  border-top: 3px solid #7c6aff;
+  border: 3px solid rgba(34, 197, 94, 0.2);
+  border-top: 3px solid #22c55e;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }

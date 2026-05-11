@@ -23,7 +23,7 @@ Console.WriteLine($"DATABASE_URL environment variable: {(string.IsNullOrEmpty(co
 if (string.IsNullOrEmpty(connectionString))
 {
     // Fallback para desarrollo local
-    connectionString = "Server=(localdb)\\MSSQLLocalDB;Database=HabitosAppDB;Trusted_Connection=True;TrustServerCertificate=True";
+    connectionString = "Server=(localdb)\\MSSQLLocalDB;Database=BetterYouDB;Trusted_Connection=True;TrustServerCertificate=True";
     Console.WriteLine("Using local SQL Server database");
     
     builder.Services.AddDbContext<AppDbContext>(opciones =>
@@ -50,7 +50,7 @@ else
         Console.WriteLine("Falling back to local SQL Server");
         
         // Fallback a SQL Server local si PostgreSQL falla
-        var fallbackConnection = "Server=(localdb)\\MSSQLLocalDB;Database=HabitosAppDB;Trusted_Connection=True;TrustServerCertificate=True";
+        var fallbackConnection = "Server=(localdb)\\MSSQLLocalDB;Database=BetterYouDB;Trusted_Connection=True;TrustServerCertificate=True";
         builder.Services.AddDbContext<AppDbContext>(opciones =>
             opciones.UseSqlServer(fallbackConnection));
     }
@@ -58,7 +58,7 @@ else
 
 // JWT
 var claveJwt = Environment.GetEnvironmentVariable("JWT_SECRET") ?? 
-               "HabitosApp_SuperSecretKey_2024_MinLength32Chars_ForProduction";
+               "BetterYou_SuperSecretKey_2024_MinLength32Chars_ForProduction";
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(opciones =>
     {
@@ -68,8 +68,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = "HabitosApp",
-            ValidAudience = "HabitosAppUsuarios",
+            ValidIssuer = "BetterYou",
+            ValidAudience = "BetterYouUsuarios",
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(claveJwt))
         };
     });
@@ -152,7 +152,7 @@ Console.WriteLine("=====================================");
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "HabitosApp API V1");
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "BetterYou API V1");
     c.RoutePrefix = "swagger";
 });
 
@@ -178,7 +178,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 // Ruta de prueba para verificar que la API funciona
-app.MapGet("/", () => "HabitosApp API está funcionando! Ve a /swagger para la documentación.");
+app.MapGet("/", () => "BetterYou API está funcionando! Ve a /swagger para la documentación.");
 app.MapGet("/health", () => new { status = "OK", timestamp = DateTime.UtcNow, version = "1.0.3", email = "sendgrid-http-api" });
 
 app.MapControllers();

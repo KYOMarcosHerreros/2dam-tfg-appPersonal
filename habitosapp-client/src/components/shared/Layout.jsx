@@ -16,6 +16,8 @@ import {
   Cloud,
   MessageSquare
 } from 'lucide-react'
+import Logo from './Logo'
+import BrandText from './BrandText'
 import './Layout.css'
 
 function Logo({ size = 30 }) {
@@ -130,7 +132,7 @@ export default function Layout({ children }) {
       >
         <div className="layout-logo">
           <Logo size={30} />
-          <span className="layout-logo-texto">HabitosApp</span>
+          <BrandText size="normal" className="layout-logo-texto" />
         </div>
 
         <nav className="layout-nav">

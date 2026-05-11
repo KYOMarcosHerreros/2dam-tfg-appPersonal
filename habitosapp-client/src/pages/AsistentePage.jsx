@@ -14,9 +14,9 @@ export default function AsistentePage() {
 
   useEffect(() => {
     cargarHistorial()
-    document.title = 'EliasHealthy - HabitosApp'
+    document.title = 'EliasHealthy - BetterYOU'
     return () => {
-      document.title = 'HabitosApp'
+      document.title = 'BetterYOU'
     }
   }, [])
 

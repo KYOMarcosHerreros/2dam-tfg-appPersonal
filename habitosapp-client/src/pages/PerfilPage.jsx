@@ -27,10 +27,10 @@ export default function PerfilPage() {
 
   useEffect(() => {
     cargarPerfil()
-    document.title = 'Mi Perfil - HabitosApp'
+    document.title = 'Mi Perfil - BetterYOU'
     console.log('🔥 PerfilPage mounted - version 1.0.2')
     return () => {
-      document.title = 'HabitosApp'
+      document.title = 'BetterYOU'
     }
   }, [])
 

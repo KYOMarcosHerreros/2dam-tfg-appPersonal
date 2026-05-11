@@ -35,10 +35,10 @@
 
 .inicio-widget {
   background: linear-gradient(135deg, 
-    rgba(22, 22, 29, 0.8) 0%, 
-    rgba(19, 19, 26, 0.9) 100%);
+    rgba(30, 42, 58, 0.8) 0%, 
+    rgba(26, 35, 50, 0.9) 100%);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(124, 106, 255, 0.2);
+  border: 1px solid rgba(34, 197, 94, 0.2);
   border-radius: 20px;
   padding: 24px;
   cursor: pointer;
@@ -49,8 +49,8 @@
 
 .inicio-widget:hover {
   transform: translateY(-4px);
-  border-color: rgba(124, 106, 255, 0.4);
-  box-shadow: 0 12px 40px rgba(124, 106, 255, 0.2);
+  border-color: rgba(34, 197, 94, 0.4);
+  box-shadow: 0 12px 40px rgba(34, 197, 94, 0.2);
 }
 
 .inicio-widget::before {
@@ -62,7 +62,7 @@
   bottom: 0;
   background: linear-gradient(45deg, 
     transparent 0%, 
-    rgba(124, 106, 255, 0.03) 50%, 
+    rgba(34, 197, 94, 0.03) 50%, 
     transparent 100%);
   pointer-events: none;
 }
@@ -71,14 +71,14 @@
 .inicio-widget-principal {
   grid-column: span 2;
   background: linear-gradient(135deg, 
-    rgba(124, 106, 255, 0.1) 0%, 
-    rgba(22, 22, 29, 0.9) 100%);
-  border-color: rgba(124, 106, 255, 0.3);
+    rgba(34, 197, 94, 0.1) 0%, 
+    rgba(30, 42, 58, 0.9) 100%);
+  border-color: rgba(34, 197, 94, 0.3);
 }
 
 .inicio-widget-principal:hover {
-  border-color: rgba(124, 106, 255, 0.5);
-  box-shadow: 0 12px 40px rgba(124, 106, 255, 0.3);
+  border-color: rgba(34, 197, 94, 0.5);
+  box-shadow: 0 12px 40px rgba(34, 197, 94, 0.3);
 }
 
 /* Widget de ancho completo */
@@ -90,7 +90,7 @@
 .inicio-widget-racha {
   background: linear-gradient(135deg, 
     rgba(249, 115, 22, 0.1) 0%, 
-    rgba(22, 22, 29, 0.9) 100%);
+    rgba(30, 42, 58, 0.9) 100%);
   border-color: rgba(249, 115, 22, 0.3);
 }
 
@@ -111,7 +111,7 @@
 .inicio-widget-record {
   background: linear-gradient(135deg, 
     rgba(245, 158, 11, 0.1) 0%, 
-    rgba(22, 22, 29, 0.9) 100%);
+    rgba(30, 42, 58, 0.9) 100%);
   border-color: rgba(245, 158, 11, 0.3);
 }
 
@@ -132,7 +132,7 @@
 .inicio-widget-tiempo {
   background: linear-gradient(135deg, 
     rgba(14, 165, 233, 0.1) 0%, 
-    rgba(22, 22, 29, 0.9) 100%);
+    rgba(30, 42, 58, 0.9) 100%);
   border-color: rgba(14, 165, 233, 0.3);
 }
 
@@ -162,21 +162,21 @@
   color: #22c55e;
 }
 
-/* Widget de Estadísticas - Púrpura */
+/* Widget de Estadísticas - Verde oscuro */
 .inicio-widget-stats {
   background: linear-gradient(135deg, 
-    rgba(168, 85, 247, 0.1) 0%, 
-    rgba(22, 22, 29, 0.9) 100%);
-  border-color: rgba(168, 85, 247, 0.3);
+    rgba(16, 185, 129, 0.1) 0%, 
+    rgba(30, 42, 58, 0.9) 100%);
+  border-color: rgba(16, 185, 129, 0.3);
 }
 
 .inicio-widget-stats:hover {
-  border-color: rgba(168, 85, 247, 0.5);
-  box-shadow: 0 12px 40px rgba(168, 85, 247, 0.2);
+  border-color: rgba(16, 185, 129, 0.5);
+  box-shadow: 0 12px 40px rgba(16, 185, 129, 0.2);
 }
 
 .inicio-widget-stats .widget-header {
-  color: #a855f7;
+  color: #10b981;
 }
 
 /* Contenido de widgets */
@@ -203,13 +203,13 @@
   width: 64px;
   height: 64px;
   border-radius: 16px;
-  background: linear-gradient(135deg, #7c6aff, #ff6ab0);
+  background: linear-gradient(135deg, #22c55e, #f59e0b);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   margin-bottom: 8px;
-  box-shadow: 0 8px 24px rgba(124, 106, 255, 0.3);
+  box-shadow: 0 8px 24px rgba(34, 197, 94, 0.3);
 }
 
 .widget-contenido h3 {
@@ -249,11 +249,11 @@
   justify-content: space-between;
   margin-top: auto;
   padding-top: 12px;
-  border-top: 1px solid rgba(124, 106, 255, 0.1);
+  border-top: 1px solid rgba(34, 197, 94, 0.1);
   font-family: 'DM Sans', sans-serif;
   font-size: 13px;
   font-weight: 600;
-  color: #7c6aff;
+  color: #22c55e;
 }
 
 .widget-stats {
@@ -273,7 +273,7 @@
 .widget-progreso {
   width: 100%;
   height: 8px;
-  background: rgba(124, 106, 255, 0.2);
+  background: rgba(34, 197, 94, 0.2);
   border-radius: 4px;
   overflow: hidden;
   position: relative;
@@ -281,7 +281,7 @@
 
 .widget-progreso-fill {
   height: 100%;
-  background: linear-gradient(135deg, #7c6aff, #ff6ab0);
+  background: linear-gradient(135deg, #22c55e, #f59e0b);
   border-radius: 4px;
   transition: width 0.3s ease;
 }
@@ -357,7 +357,7 @@
   font-family: 'Outfit', sans-serif;
   font-size: 24px;
   font-weight: 800;
-  color: #a855f7;
+  color: #10b981;
 }
 
 .stat-label {
@@ -381,8 +381,8 @@
 .inicio-cargando-spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid rgba(124, 106, 255, 0.2);
-  border-top: 3px solid #7c6aff;
+  border: 3px solid rgba(34, 197, 94, 0.2);
+  border-top: 3px solid #22c55e;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }

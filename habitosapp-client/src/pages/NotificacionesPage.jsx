@@ -12,9 +12,9 @@ export default function NotificacionesPage() {
 
   useEffect(() => {
     cargarNotificaciones()
-    document.title = 'Notificaciones - HabitosApp'
+    document.title = 'Notificaciones - BetterYOU'
     return () => {
-      document.title = 'HabitosApp'
+      document.title = 'BetterYOU'
     }
   }, [])
 

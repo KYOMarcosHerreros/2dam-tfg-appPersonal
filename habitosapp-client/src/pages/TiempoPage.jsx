@@ -34,11 +34,11 @@ export default function TiempoPage() {
   const [buscandoUbicacion, setBuscandoUbicacion] = useState(false)
 
   useEffect(() => {
-    document.title = 'Pronóstico del Tiempo - HabitosApp'
+    document.title = 'Pronóstico del Tiempo - BetterYOU'
     obtenerUbicacionYTiempo()
     
     return () => {
-      document.title = 'HabitosApp'
+      document.title = 'BetterYOU'
     }
   }, [])
 

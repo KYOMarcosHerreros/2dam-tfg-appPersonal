@@ -21,7 +21,7 @@ export default function ForoNuevoTemaPage() {
     cargarCategorias()
     
     return () => {
-      document.title = 'HabitosApp'
+      document.title = 'BetterYOU'
     }
   }, [])
 

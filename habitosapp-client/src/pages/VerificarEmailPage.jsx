@@ -12,11 +12,11 @@ export default function VerificarEmailPage() {
   const [mensaje, setMensaje] = useState('')
 
   useEffect(() => {
-    document.title = 'Verificar Email - HabitosApp'
+    document.title = 'Verificar Email - BetterYOU'
     verificarToken()
     
     return () => {
-      document.title = 'HabitosApp'
+      document.title = 'BetterYOU'
     }
   }, [])
 

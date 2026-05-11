@@ -27,11 +27,11 @@ export default function ForoPage() {
   const [mostrarFiltros, setMostrarFiltros] = useState(false)
 
   useEffect(() => {
-    document.title = 'Foro - HabitosApp'
+    document.title = 'Foro - BetterYOU'
     cargarDatos()
     
     return () => {
-      document.title = 'HabitosApp'
+      document.title = 'BetterYOU'
     }
   }, [categoriaSeleccionada, ordenar])
 
