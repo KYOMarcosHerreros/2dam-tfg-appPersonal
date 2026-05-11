@@ -1,21 +1,27 @@
 export default function BrandText({ size = 'normal', className = '' }) {
-  const sizeClasses = {
-    small: 'text-sm',
-    normal: 'text-lg',
-    large: 'text-2xl',
-    xlarge: 'text-4xl'
+  const sizeStyles = {
+    small: { fontSize: '14px' },
+    normal: { fontSize: '18px' },
+    large: { fontSize: '24px' },
+    xlarge: { fontSize: '32px' }
   }
 
   return (
-    <span className={`font-bold ${sizeClasses[size]} ${className}`}>
-      <span className="text-white">Better</span>
+    <span 
+      className={className}
+      style={{ 
+        fontWeight: 'bold',
+        ...sizeStyles[size]
+      }}
+    >
+      <span style={{ color: 'white' }}>Better</span>
       <span 
-        className="bg-gradient-to-r from-amber-500 to-yellow-400 bg-clip-text text-transparent font-extrabold"
         style={{
           background: 'linear-gradient(135deg, #f59e0b, #fbbf24)',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text'
+          backgroundClip: 'text',
+          fontWeight: '800'
         }}
       >
         YOU
