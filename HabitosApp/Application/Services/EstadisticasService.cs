@@ -19,12 +19,6 @@ namespace HabitosApp.Application.Services
             var hoy = DateOnly.FromDateTime(DateTime.UtcNow);
             Console.WriteLine($"[DEBUG] Obteniendo estadísticas para usuario {usuarioId}, fecha hoy: {hoy}");
 
-            var usuario = await _contexto.Usuarios.FindAsync(usuarioId);
-            if (usuario == null)
-            {
-                throw new ArgumentException("Usuario no encontrado");
-            }
-
             var habitos = await _contexto.Habitos
                 .Where(h => h.UsuarioId == usuarioId && h.EstaActivo)
                 .ToListAsync();
@@ -46,32 +40,13 @@ namespace HabitosApp.Application.Services
                 .Where(r => r.Habito.UsuarioId == usuarioId)
                 .ToListAsync();
 
-            // Calcular días únicos de uso real de la app
+            // Calcular días únicos de uso real de la app (siempre dinámico por ahora)
             var diasUsoReal = await _contexto.RegistrosDiarios
                 .Where(r => r.UsuarioId == usuarioId)
                 .Select(r => r.Fecha)
                 .Distinct()
                 .CountAsync();
             Console.WriteLine($"[DEBUG] Días únicos de uso real: {diasUsoReal}");
-
-            // Intentar actualizar el récord de uso si es mayor (compatible con versiones sin RecordUso)
-            int recordUsoActual = diasUsoReal; // Por defecto usar el cálculo actual
-            try
-            {
-                if (diasUsoReal > usuario.RecordUso)
-                {
-                    usuario.RecordUso = diasUsoReal;
-                    await _contexto.SaveChangesAsync();
-                    Console.WriteLine($"[DEBUG] Récord de uso actualizado a: {diasUsoReal}");
-                }
-                recordUsoActual = usuario.RecordUso;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[DEBUG] Campo RecordUso no disponible, usando cálculo dinámico: {ex.Message}");
-                // Si falla, usar el cálculo dinámico (compatibilidad hacia atrás)
-                recordUsoActual = diasUsoReal;
-            }
 
             var fechaInicioSemana = hoy.AddDays(-6);
             Console.WriteLine($"[DEBUG] Calculando últimos 7 días desde {fechaInicioSemana} hasta {hoy}");
@@ -111,7 +86,7 @@ namespace HabitosApp.Application.Services
                     : 0,
                 mejorRacha = rachas.Any() ? rachas.Max(r => r.DiasRecord) : 0,
                 rachaActualMaxima = rachas.Any() ? rachas.Max(r => r.DiasActual) : 0,
-                diasUsoReal = recordUsoActual, // Usar el récord calculado o persistido
+                diasUsoReal = diasUsoReal, // Usar siempre el cálculo dinámico por ahora
                 ultimos7Dias = ultimos7Dias
             };
         }
