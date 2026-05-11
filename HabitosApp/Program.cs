@@ -179,7 +179,7 @@ app.UseAuthorization();
 
 // Ruta de prueba para verificar que la API funciona
 app.MapGet("/", () => "BetterYou API está funcionando! Ve a /swagger para la documentación.");
-app.MapGet("/health", () => new { status = "OK", timestamp = DateTime.UtcNow, version = "1.0.3", email = "sendgrid-http-api" });
+app.MapGet("/health", () => new { status = "OK", timestamp = DateTime.UtcNow, version = "1.0.4", email = "sendgrid-http-api", jwt_fixed = true });
 
 app.MapControllers();
 
