@@ -54,12 +54,23 @@ namespace HabitosApp.Application.Services
                 .CountAsync();
             Console.WriteLine($"[DEBUG] Días únicos de uso real: {diasUsoReal}");
 
-            // Actualizar el récord de uso si es mayor
-            if (diasUsoReal > usuario.RecordUso)
+            // Intentar actualizar el récord de uso si es mayor (compatible con versiones sin RecordUso)
+            int recordUsoActual = diasUsoReal; // Por defecto usar el cálculo actual
+            try
             {
-                usuario.RecordUso = diasUsoReal;
-                await _contexto.SaveChangesAsync();
-                Console.WriteLine($"[DEBUG] Récord de uso actualizado a: {diasUsoReal}");
+                if (diasUsoReal > usuario.RecordUso)
+                {
+                    usuario.RecordUso = diasUsoReal;
+                    await _contexto.SaveChangesAsync();
+                    Console.WriteLine($"[DEBUG] Récord de uso actualizado a: {diasUsoReal}");
+                }
+                recordUsoActual = usuario.RecordUso;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[DEBUG] Campo RecordUso no disponible, usando cálculo dinámico: {ex.Message}");
+                // Si falla, usar el cálculo dinámico (compatibilidad hacia atrás)
+                recordUsoActual = diasUsoReal;
             }
 
             var fechaInicioSemana = hoy.AddDays(-6);
@@ -100,7 +111,7 @@ namespace HabitosApp.Application.Services
                     : 0,
                 mejorRacha = rachas.Any() ? rachas.Max(r => r.DiasRecord) : 0,
                 rachaActualMaxima = rachas.Any() ? rachas.Max(r => r.DiasActual) : 0,
-                diasUsoReal = usuario.RecordUso, // Usar el récord persistido
+                diasUsoReal = recordUsoActual, // Usar el récord calculado o persistido
                 ultimos7Dias = ultimos7Dias
             };
         }
