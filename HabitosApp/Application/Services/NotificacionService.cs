@@ -130,25 +130,13 @@ namespace HabitosApp.Application.Services
         {
             try
             {
-                Console.WriteLine("📧 Iniciando envío de notificación por email...");
+                Console.WriteLine("📧 NOTIFICACIÓN - Iniciando envío por email...");
                 
-                // Leer configuración con fallback a variables de entorno (igual que VerificacionEmailService)
+                // Leer configuración con fallback a variables de entorno
                 var emailServidor = _configuracion["Email:servidor"];
                 if (string.IsNullOrEmpty(emailServidor))
                 {
                     emailServidor = Environment.GetEnvironmentVariable("EMAIL_SERVIDOR");
-                }
-                
-                var emailPuerto = _configuracion["Email:puerto"];
-                if (string.IsNullOrEmpty(emailPuerto))
-                {
-                    emailPuerto = Environment.GetEnvironmentVariable("EMAIL_PUERTO");
-                }
-                
-                var emailUsuario = _configuracion["Email:usuario"];
-                if (string.IsNullOrEmpty(emailUsuario))
-                {
-                    emailUsuario = Environment.GetEnvironmentVariable("EMAIL_USUARIO");
                 }
                 
                 var emailPassword = _configuracion["Email:password"];
@@ -163,21 +151,54 @@ namespace HabitosApp.Application.Services
                     emailNombreRemitente = Environment.GetEnvironmentVariable("EMAIL_NOMBRE_REMITENTE");
                 }
 
-                if (string.IsNullOrEmpty(emailServidor) || string.IsNullOrEmpty(emailUsuario) || string.IsNullOrEmpty(emailPassword))
+                if (string.IsNullOrEmpty(emailPassword))
                 {
-                    Console.WriteLine("❌ Configuración de email incompleta para notificaciones");
-                    throw new Exception("Configuración de email no disponible");
+                    Console.WriteLine("❌ NOTIFICACIÓN - SendGrid API Key no configurada");
+                    throw new Exception("SendGrid API Key no configurada");
                 }
 
-                var email = new MimeMessage();
-                email.From.Add(new MailboxAddress(
-                    emailNombreRemitente ?? "HabitosApp",
-                    emailUsuario));
-                email.To.Add(new MailboxAddress(nombre, destinatario));
-                email.Subject = asunto;
+                // Detectar si es SendGrid y usar HTTP API
+                bool esSendGrid = emailServidor?.Contains("sendgrid") == true;
+                
+                if (esSendGrid)
+                {
+                    Console.WriteLine("📧 NOTIFICACIÓN - Usando SendGrid HTTP API");
+                    await enviarEmailConSendGridAPI(destinatario, nombre, asunto, cuerpo, emailPassword, emailNombreRemitente);
+                }
+                else
+                {
+                    Console.WriteLine("📧 NOTIFICACIÓN - Usando SMTP (puede fallar en Railway)");
+                    throw new Exception("SMTP no disponible en Railway - usar SendGrid HTTP API");
+                }
 
-                // Crear email HTML atractivo
-                var htmlBody = $@"
+                Console.WriteLine($"🎉 NOTIFICACIÓN - Email enviado exitosamente a {destinatario}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ NOTIFICACIÓN - Error enviando email a {destinatario}: {ex.Message}");
+                Console.WriteLine($"❌ NOTIFICACIÓN - Stack trace: {ex.StackTrace}");
+            }
+        }
+
+        private async Task enviarEmailConSendGridAPI(string destinatario, string nombre, string asunto, string cuerpo, string apiKey, string nombreRemitente)
+        {
+            var emailData = new
+            {
+                personalizations = new[]
+                {
+                    new
+                    {
+                        to = new[] { new { email = destinatario, name = nombre } },
+                        subject = asunto
+                    }
+                },
+                from = new { email = "marcosTfgCartero@gmail.com", name = nombreRemitente ?? "HabitosApp" },
+                content = new[]
+                {
+                    new
+                    {
+                        type = "text/html",
+                        value = $@"
 <!DOCTYPE html>
 <html>
 <head>
@@ -210,12 +231,6 @@ namespace HabitosApp.Application.Services
                 </p>
             </div>
 
-            <div style='text-align: center; margin: 30px 0;'>
-                <a href='https://tu-app-url.com' style='background: linear-gradient(135deg, #7c6aff, #ff6ab0); color: white; padding: 15px 30px; text-decoration: none; border-radius: 25px; font-weight: bold; display: inline-block; font-size: 16px;'>
-                    🚀 Abrir HabitosApp
-                </a>
-            </div>
-
             <div style='background-color: #fff8e1; border-radius: 8px; padding: 20px; margin: 20px 0;'>
                 <p style='color: #f57c00; margin: 0; font-size: 14px; text-align: center;'>
                     💡 <strong>Consejo de EliasHealthy:</strong> La consistencia es más importante que la perfección. ¡Sigue adelante!
@@ -237,39 +252,30 @@ namespace HabitosApp.Application.Services
         </div>
     </div>
 </body>
-</html>";
-
-                var builder = new BodyBuilder();
-                builder.HtmlBody = htmlBody;
-                builder.TextBody = cuerpo; // Fallback para clientes que no soportan HTML
-                email.Body = builder.ToMessageBody();
-
-                using var smtp = new SmtpClient();
-                await smtp.ConnectAsync(emailServidor, int.Parse(emailPuerto ?? "587"), SecureSocketOptions.StartTls);
-                await smtp.AuthenticateAsync(emailUsuario, emailPassword);
-                await smtp.SendAsync(email);
-                await smtp.DisconnectAsync(true);
-
-                Console.WriteLine($"✅ Notificación por email enviada a {destinatario}");
-
-                // Actualizar fecha de envío en la notificación
-                var notificacionEmail = await _contexto.Notificaciones
-                    .OrderByDescending(n => n.FechaCreacion)
-                    .FirstOrDefaultAsync();
-
-                if (notificacionEmail != null)
-                {
-                    notificacionEmail.FechaEnvio = DateTime.UtcNow;
-                    await _contexto.SaveChangesAsync();
+</html>"
+                    }
                 }
+            };
 
-                Console.WriteLine($"✅ Email enviado exitosamente a {destinatario}");
-            }
-            catch (Exception ex)
+            using var httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey);
+            httpClient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+
+            var json = System.Text.Json.JsonSerializer.Serialize(emailData);
+            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+
+            Console.WriteLine("📤 NOTIFICACIÓN - Enviando via SendGrid HTTP API...");
+            var response = await httpClient.PostAsync("https://api.sendgrid.com/v3/mail/send", content);
+
+            if (response.IsSuccessStatusCode)
             {
-                Console.WriteLine($"❌ Error enviando email a {destinatario}: {ex.Message}");
-                // Log más detallado para debugging
-                Console.WriteLine($"Detalles del error: {ex.StackTrace}");
+                Console.WriteLine("✅ NOTIFICACIÓN - Email enviado exitosamente via HTTP API");
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"❌ NOTIFICACIÓN - Error HTTP API: {response.StatusCode} - {errorContent}");
+                throw new Exception($"SendGrid API Error: {response.StatusCode} - {errorContent}");
             }
         }
     }
