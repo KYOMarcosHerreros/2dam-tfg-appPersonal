@@ -156,23 +156,32 @@ namespace HabitosApp.Application.Services
             else
             {
                 // Calcular la racha actual (días consecutivos hasta hoy o la fecha más reciente)
+                var hoy = DateOnly.FromDateTime(DateTime.UtcNow);
                 var fechaMasReciente = registrosCompletados.Max();
                 var rachaActual = 0;
-                var fechaActual = fechaMasReciente;
-                var fechaInicioRacha = fechaMasReciente;
+                var fechaActual = hoy;
+                var fechaInicioRacha = hoy;
 
-                Console.WriteLine($"[DEBUG] Calculando racha desde: {fechaMasReciente}");
+                Console.WriteLine($"[DEBUG] Calculando racha actual desde hoy: {hoy}, fecha más reciente: {fechaMasReciente}");
 
-                // Contar hacia atrás desde la fecha más reciente
-                while (registrosCompletados.Contains(fechaActual))
+                // Solo contar la racha si incluye el día de hoy
+                if (registrosCompletados.Contains(hoy))
                 {
-                    rachaActual++;
-                    fechaInicioRacha = fechaActual;
-                    Console.WriteLine($"[DEBUG] Día {rachaActual}: {fechaActual}");
-                    fechaActual = fechaActual.AddDays(-1);
+                    // Contar hacia atrás desde hoy
+                    while (registrosCompletados.Contains(fechaActual))
+                    {
+                        rachaActual++;
+                        fechaInicioRacha = fechaActual;
+                        Console.WriteLine($"[DEBUG] Día {rachaActual}: {fechaActual}");
+                        fechaActual = fechaActual.AddDays(-1);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"[DEBUG] No hay registro para hoy, racha actual = 0");
                 }
 
-                Console.WriteLine($"[DEBUG] Racha actual calculada: {rachaActual} días (desde {fechaInicioRacha} hasta {fechaMasReciente})");
+                Console.WriteLine($"[DEBUG] Racha actual calculada: {rachaActual} días (desde {fechaInicioRacha} hasta {hoy})");
 
                 // Calcular la racha más larga histórica
                 var rachaMaxima = 0;
@@ -181,7 +190,7 @@ namespace HabitosApp.Application.Services
 
                 foreach (var fechaRegistro in registrosCompletados)
                 {
-                    if (fechaAnterior == null || fechaRegistro.DayNumber - fechaAnterior.Value.DayNumber == 1)
+                    if (fechaAnterior == null || fechaRegistro.AddDays(-1) == fechaAnterior)
                     {
                         rachaTemp++;
                     }
@@ -200,7 +209,7 @@ namespace HabitosApp.Application.Services
                 racha.DiasActual = rachaActual;
                 racha.DiasRecord = Math.Max(racha.DiasRecord, rachaMaxima);
                 racha.FechaInicioActual = fechaInicioRacha;
-                racha.FechaUltimoRegistro = fechaMasReciente;
+                racha.FechaUltimoRegistro = registrosCompletados.Contains(hoy) ? hoy : fechaMasReciente;
 
                 Console.WriteLine($"[DEBUG] Racha después - Actual: {racha.DiasActual}, Record: {racha.DiasRecord}");
             }

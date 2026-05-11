@@ -15,6 +15,7 @@ namespace HabitosApp.Domain.Entities
         public DateTime? FechaTokenVerificacion { get; set; } // Nuevo campo
         public DateTime FechaRegistro { get; set; } = DateTime.UtcNow;
         public DateTime? UltimoAcceso { get; set; }
+        public int RecordUso { get; set; } = 0; // Días únicos de uso de la app
 
         // Navegación
         public ICollection<Habito> Habitos { get; set; } = new List<Habito>();

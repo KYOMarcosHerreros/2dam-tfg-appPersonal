@@ -19,6 +19,12 @@ namespace HabitosApp.Application.Services
             var hoy = DateOnly.FromDateTime(DateTime.UtcNow);
             Console.WriteLine($"[DEBUG] Obteniendo estadísticas para usuario {usuarioId}, fecha hoy: {hoy}");
 
+            var usuario = await _contexto.Usuarios.FindAsync(usuarioId);
+            if (usuario == null)
+            {
+                throw new ArgumentException("Usuario no encontrado");
+            }
+
             var habitos = await _contexto.Habitos
                 .Where(h => h.UsuarioId == usuarioId && h.EstaActivo)
                 .ToListAsync();
@@ -47,6 +53,14 @@ namespace HabitosApp.Application.Services
                 .Distinct()
                 .CountAsync();
             Console.WriteLine($"[DEBUG] Días únicos de uso real: {diasUsoReal}");
+
+            // Actualizar el récord de uso si es mayor
+            if (diasUsoReal > usuario.RecordUso)
+            {
+                usuario.RecordUso = diasUsoReal;
+                await _contexto.SaveChangesAsync();
+                Console.WriteLine($"[DEBUG] Récord de uso actualizado a: {diasUsoReal}");
+            }
 
             var fechaInicioSemana = hoy.AddDays(-6);
             Console.WriteLine($"[DEBUG] Calculando últimos 7 días desde {fechaInicioSemana} hasta {hoy}");
@@ -86,7 +100,7 @@ namespace HabitosApp.Application.Services
                     : 0,
                 mejorRacha = rachas.Any() ? rachas.Max(r => r.DiasRecord) : 0,
                 rachaActualMaxima = rachas.Any() ? rachas.Max(r => r.DiasActual) : 0,
-                diasUsoReal = diasUsoReal, // Nuevo campo
+                diasUsoReal = usuario.RecordUso, // Usar el récord persistido
                 ultimos7Dias = ultimos7Dias
             };
         }
