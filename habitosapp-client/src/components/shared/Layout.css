@@ -315,3 +315,131 @@
   background-color: rgba(239, 68, 68, 0.08);
   color: #ef4444;
 }
+
+/* === RESPONSIVE MÓVIL === */
+.layout-hamburger {
+  display: none;
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 1001;
+  background: rgba(26, 35, 50, 0.95);
+  border: 1px solid rgba(124, 106, 255, 0.3);
+  border-radius: 12px;
+  padding: 12px;
+  color: #f8fafc;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.layout-hamburger:hover {
+  background: rgba(124, 106, 255, 0.15);
+  border-color: rgba(124, 106, 255, 0.5);
+  transform: scale(1.05);
+}
+
+.layout-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 150;
+  backdrop-filter: blur(4px);
+}
+
+@media (max-width: 768px) {
+  .layout-hamburger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .layout-sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 200;
+    width: 280px;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .layout-sidebar.abierta {
+    transform: translateX(0);
+  }
+
+  .layout-contenido {
+    margin-left: 0;
+    padding: 80px 16px 16px 16px;
+  }
+
+  .layout-topbar {
+    left: 0;
+    padding: 0 70px 0 16px;
+    height: 60px;
+  }
+
+  .layout-topbar-boton {
+    padding: 8px 12px;
+    gap: 8px;
+  }
+
+  .layout-topbar-avatar,
+  .layout-topbar-avatar-imagen {
+    width: 32px;
+    height: 32px;
+  }
+
+  .layout-topbar-nombre {
+    font-size: 12px;
+  }
+
+  .layout-topbar-email {
+    font-size: 10px;
+  }
+
+  .layout-topbar-menu {
+    right: 16px;
+    min-width: 180px;
+  }
+}
+
+@media (max-width: 480px) {
+  .layout-contenido {
+    padding: 70px 12px 12px 12px;
+  }
+
+  .layout-topbar {
+    padding: 0 60px 0 12px;
+    height: 55px;
+  }
+
+  .layout-hamburger {
+    top: 12px;
+    left: 12px;
+    padding: 10px;
+  }
+
+  .layout-sidebar {
+    width: 260px;
+  }
+
+  .layout-topbar-boton {
+    padding: 6px 10px;
+  }
+
+  .layout-topbar-avatar,
+  .layout-topbar-avatar-imagen {
+    width: 28px;
+    height: 28px;
+  }
+
+  .layout-topbar-nombre {
+    display: none;
+  }
+
+  .layout-topbar-email {
+    display: none;
+  }
+}

@@ -14,7 +14,9 @@ import {
   User,
   ChevronDown,
   Cloud,
-  MessageSquare
+  MessageSquare,
+  Menu,
+  X
 } from 'lucide-react'
 import Logo from '../../shared/Logo'
 import BrandText from '../../shared/BrandText'
@@ -35,7 +37,9 @@ export default function Layout({ children }) {
   const navigate = useNavigate()
   const [notificacionesNoLeidas, setNotificacionesNoLeidas] = useState(0)
   const [menuAbierto, setMenuAbierto] = useState(false)
+  const [sidebarAbierta, setSidebarAbierta] = useState(false)
   const menuRef = useRef(null)
+  const sidebarRef = useRef(null)
 
   useEffect(() => {
     cargarNotificaciones()
@@ -62,15 +66,20 @@ export default function Layout({ children }) {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setMenuAbierto(false)
       }
+      // Cerrar sidebar en móvil si se hace clic fuera
+      if (sidebarRef.current && !sidebarRef.current.contains(event.target) && window.innerWidth <= 768) {
+        setSidebarAbierta(false)
+      }
     }
 
     const handleEscapeKey = (event) => {
       if (event.key === 'Escape') {
         setMenuAbierto(false)
+        setSidebarAbierta(false)
       }
     }
 
-    if (menuAbierto) {
+    if (menuAbierto || sidebarAbierta) {
       document.addEventListener('mousedown', handleClickOutside)
       document.addEventListener('keydown', handleEscapeKey)
     }
@@ -79,7 +88,7 @@ export default function Layout({ children }) {
       document.removeEventListener('mousedown', handleClickOutside)
       document.removeEventListener('keydown', handleEscapeKey)
     }
-  }, [menuAbierto])
+  }, [menuAbierto, sidebarAbierta])
 
   const cargarNotificaciones = async () => {
     try {
@@ -98,6 +107,13 @@ export default function Layout({ children }) {
     navigate('/login')
   }
 
+  const handleNavClick = () => {
+    // Cerrar sidebar en móvil cuando se navega
+    if (window.innerWidth <= 768) {
+      setSidebarAbierta(false)
+    }
+  }
+
   const iniciales = usuario?.nombre
     ?.split(' ')
     .map(n => n[0])
@@ -107,10 +123,37 @@ export default function Layout({ children }) {
 
   return (
     <div className="layout-contenedor">
+      {/* Overlay para móvil */}
+      <AnimatePresence>
+        {sidebarAbierta && (
+          <motion.div
+            className="layout-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSidebarAbierta(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Botón hamburguesa para móvil */}
+      <button
+        className="layout-hamburger"
+        onClick={() => setSidebarAbierta(!sidebarAbierta)}
+        aria-label="Abrir menú"
+      >
+        {sidebarAbierta ? <X size={24} /> : <Menu size={24} />}
+      </button>
+
       <motion.aside
-        className="layout-sidebar"
+        ref={sidebarRef}
+        className={`layout-sidebar ${sidebarAbierta ? 'abierta' : ''}`}
         initial={{ x: -240, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
+        animate={{ 
+          x: 0, 
+          opacity: 1,
+          transform: window.innerWidth <= 768 && !sidebarAbierta ? 'translateX(-100%)' : 'translateX(0)'
+        }}
         transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
       >
         <div className="layout-logo">
@@ -131,6 +174,7 @@ export default function Layout({ children }) {
                 className={({ isActive }) =>
                   `layout-nav-item ${isActive ? 'activo' : ''}`
                 }
+                onClick={handleNavClick}
               >
                 <item.icono size={18} />
                 {item.etiqueta}

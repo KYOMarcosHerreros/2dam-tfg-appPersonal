@@ -132,28 +132,136 @@
 }
 
 @media (max-width: 768px) {
+  .estadisticas-contenedor {
+    gap: 20px;
+    padding-bottom: 20px;
+  }
+
   .estadisticas-graficos {
     grid-template-columns: 1fr;
+    gap: 16px;
   }
   
   .estadisticas-metricas {
     grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
   }
   
   .estadisticas-header {
     flex-direction: column;
     align-items: stretch;
+    gap: 12px;
   }
   
   .estadisticas-boton-recargar {
     width: 100%;
     justify-content: center;
   }
+
+  .estadisticas-titulo {
+    font-size: 24px;
+  }
+
+  .metrica-card {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .metrica-icono {
+    width: 48px;
+    height: 48px;
+  }
+
+  .metrica-valor {
+    font-size: 20px;
+  }
+
+  .metrica-label {
+    font-size: 12px;
+  }
+
+  .grafico-card {
+    padding: 20px;
+    gap: 16px;
+  }
+
+  .grafico-titulo {
+    font-size: 15px;
+  }
+
+  /* Mejorar gráficos en móvil */
+  .recharts-wrapper {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 250px;
+  }
+
+  .recharts-surface {
+    width: 100% !important;
+  }
 }
 
 @media (max-width: 480px) {
+  .estadisticas-contenedor {
+    gap: 16px;
+  }
+
   .estadisticas-metricas {
     grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .estadisticas-titulo {
+    font-size: 22px;
+  }
+
+  .metrica-card {
+    padding: 14px;
+    gap: 10px;
+  }
+
+  .metrica-icono {
+    width: 40px;
+    height: 40px;
+  }
+
+  .metrica-valor {
+    font-size: 18px;
+  }
+
+  .metrica-label {
+    font-size: 11px;
+  }
+
+  .grafico-card {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .grafico-titulo {
+    font-size: 14px;
+  }
+
+  .estadisticas-vacio {
+    padding: 40px 20px;
+    gap: 12px;
+  }
+
+  .estadisticas-vacio-icono {
+    font-size: 48px;
+  }
+
+  .estadisticas-vacio-titulo {
+    font-size: 18px;
+  }
+
+  .estadisticas-vacio-texto {
+    font-size: 13px;
+  }
+
+  /* Gráficos más pequeños en móvil */
+  .recharts-wrapper {
+    min-height: 200px;
   }
 }
 

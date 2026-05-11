@@ -412,7 +412,7 @@
   }
 
   .inicio-widget-ancho-completo {
-    grid-column: 1 / -1; /* Mantener ancho completo en móvil también */
+    grid-column: 1 / -1;
   }
 
   .inicio-widget {
@@ -431,11 +431,35 @@
   .widget-numero-grande {
     font-size: 32px;
   }
+
+  .widget-tiempo-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .widget-temperatura {
+    font-size: 28px;
+  }
+
+  .widget-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
 }
 
 @media (max-width: 480px) {
+  .inicio-contenedor {
+    padding: 12px;
+    gap: 16px;
+  }
+
   .inicio-saludo h1 {
     font-size: 24px;
+  }
+
+  .inicio-saludo p {
+    font-size: 14px;
   }
 
   .inicio-widgets-grid {
@@ -444,6 +468,31 @@
 
   .inicio-widget {
     padding: 16px;
+  }
+
+  .widget-icono-grande {
+    width: 48px;
+    height: 48px;
+  }
+
+  .widget-contenido h3 {
+    font-size: 16px;
+  }
+
+  .widget-numero-grande {
+    font-size: 28px;
+  }
+
+  .widget-header {
+    font-size: 13px;
+  }
+
+  .widget-contenido p {
+    font-size: 13px;
+  }
+
+  .widget-cta {
+    font-size: 12px;
   }
 }
 
