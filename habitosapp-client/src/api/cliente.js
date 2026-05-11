@@ -17,6 +17,9 @@ cliente.interceptors.request.use((config) => {
   const token = localStorage.getItem('token')
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
+    console.log('🔑 Token enviado:', token.substring(0, 20) + '...')
+  } else {
+    console.log('❌ No hay token disponible')
   }
   console.log('Petición a:', config.baseURL + config.url)
   return config

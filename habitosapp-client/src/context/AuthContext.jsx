@@ -37,6 +37,12 @@ export function AuthProvider({ children }) {
   }, [])
 
   const login = (datos) => {
+    console.log('🔐 Guardando datos de login:', { 
+      token: datos.token ? datos.token.substring(0, 20) + '...' : 'NO TOKEN',
+      nombre: datos.nombre,
+      email: datos.email 
+    })
+    
     localStorage.setItem('token', datos.token)
     localStorage.setItem('usuario', JSON.stringify({ 
       nombre: datos.nombre, 
@@ -49,6 +55,8 @@ export function AuthProvider({ children }) {
       email: datos.email,
       fotoPerfil: datos.fotoPerfil || null
     })
+    
+    console.log('✅ Login completado, token guardado')
   }
 
   const actualizarUsuario = (datosUsuario) => {

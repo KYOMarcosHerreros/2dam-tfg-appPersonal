@@ -47,28 +47,6 @@ export default function InicioPage() {
         return
       }
 
-      // Función helper para manejar respuestas de API - YA NO SE USA
-      // const handleApiResponse = async (response, errorMessage) => {
-      //   if (!response.ok) {
-      //     const errorText = await response.text()
-      //     console.error(`${errorMessage}:`, response.status, errorText)
-      //     throw new Error(`${errorMessage}: ${response.status}`)
-      //   }
-      //   
-      //   const contentType = response.headers.get('content-type')
-      //   if (!contentType || !contentType.includes('application/json')) {
-      //     const text = await response.text()
-      //     console.error('Respuesta no es JSON:', text)
-      //     throw new Error('La respuesta del servidor no es JSON válido')
-      //   }
-      //   
-      //   return await response.json()
-      // }
-
-      let estadisticasData = null
-      let habitosData = []
-      let resumenHoy = null
-
       // Obtener estadísticas generales reales
       try {
         console.log('🔍 Obteniendo estadísticas generales...')
@@ -108,22 +86,9 @@ export default function InicioPage() {
         habitosData = []
       }
 
-      // Obtener resumen del día de hoy
-      try {
-        const hoy = new Date().toISOString().split('T')[0] // YYYY-MM-DD
-        const responseHoy = await fetch(`/api/registrodiario/${hoy}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        })
-        if (responseHoy.ok) {
-          resumenHoy = await handleApiResponse(responseHoy, 'Error al obtener resumen del día')
-        }
-      } catch (error) {
-        console.error('Error obteniendo resumen del día:', error)
-        resumenHoy = null
-      }
+      // Obtener resumen del día de hoy - DESHABILITADO TEMPORALMENTE
+      // Esta funcionalidad se implementará más adelante
+      let resumenHoy = null
 
       // Calcular días de uso real (desde el backend)
       let diasUso = estadisticasData?.diasUsoReal || 0
