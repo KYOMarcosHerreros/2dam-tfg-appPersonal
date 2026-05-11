@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
+import { obtenerEstadisticasGenerales } from '../api/estadisticas'
+import { obtenerHabitos } from '../api/habitos'
 import { 
   Plus, 
   Flame, 
@@ -45,23 +47,23 @@ export default function InicioPage() {
         return
       }
 
-      // Función helper para manejar respuestas de API
-      const handleApiResponse = async (response, errorMessage) => {
-        if (!response.ok) {
-          const errorText = await response.text()
-          console.error(`${errorMessage}:`, response.status, errorText)
-          throw new Error(`${errorMessage}: ${response.status}`)
-        }
-        
-        const contentType = response.headers.get('content-type')
-        if (!contentType || !contentType.includes('application/json')) {
-          const text = await response.text()
-          console.error('Respuesta no es JSON:', text)
-          throw new Error('La respuesta del servidor no es JSON válido')
-        }
-        
-        return await response.json()
-      }
+      // Función helper para manejar respuestas de API - YA NO SE USA
+      // const handleApiResponse = async (response, errorMessage) => {
+      //   if (!response.ok) {
+      //     const errorText = await response.text()
+      //     console.error(`${errorMessage}:`, response.status, errorText)
+      //     throw new Error(`${errorMessage}: ${response.status}`)
+      //   }
+      //   
+      //   const contentType = response.headers.get('content-type')
+      //   if (!contentType || !contentType.includes('application/json')) {
+      //     const text = await response.text()
+      //     console.error('Respuesta no es JSON:', text)
+      //     throw new Error('La respuesta del servidor no es JSON válido')
+      //   }
+      //   
+      //   return await response.json()
+      // }
 
       let estadisticasData = null
       let habitosData = []
@@ -70,13 +72,7 @@ export default function InicioPage() {
       // Obtener estadísticas generales reales
       try {
         console.log('🔍 Obteniendo estadísticas generales...')
-        const responseEstadisticas = await fetch('/api/estadisticas/generales', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        })
-        estadisticasData = await handleApiResponse(responseEstadisticas, 'Error al obtener estadísticas')
+        estadisticasData = await obtenerEstadisticasGenerales()
         console.log('✅ Estadísticas obtenidas:', estadisticasData)
       } catch (error) {
         console.error('❌ Error obteniendo estadísticas:', error)
@@ -92,13 +88,7 @@ export default function InicioPage() {
 
       // Obtener hábitos del usuario
       try {
-        const responseHabitos = await fetch('/api/habitos', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        })
-        habitosData = await handleApiResponse(responseHabitos, 'Error al obtener hábitos')
+        habitosData = await obtenerHabitos()
       } catch (error) {
         console.error('Error obteniendo hábitos:', error)
         habitosData = []
