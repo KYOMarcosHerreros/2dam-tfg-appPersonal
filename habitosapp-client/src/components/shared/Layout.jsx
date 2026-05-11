@@ -16,8 +16,8 @@ import {
   Cloud,
   MessageSquare
 } from 'lucide-react'
-import Logo from './Logo'
-import BrandText from './BrandText'
+import Logo from '../../shared/Logo'
+import BrandText from '../../shared/BrandText'
 import './Layout.css'
 
 const navItems = [
