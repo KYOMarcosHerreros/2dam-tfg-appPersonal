@@ -72,7 +72,8 @@ export default function InicioPage() {
       // Obtener estadísticas generales reales
       try {
         console.log('🔍 Obteniendo estadísticas generales...')
-        estadisticasData = await obtenerEstadisticasGenerales()
+        const response = await obtenerEstadisticasGenerales()
+        estadisticasData = response.data // Axios devuelve {data: {...}}
         console.log('✅ Estadísticas obtenidas:', estadisticasData)
         console.log('📊 Detalles de estadísticas:')
         console.log('  - totalHabitos:', estadisticasData?.totalHabitos)
@@ -97,7 +98,8 @@ export default function InicioPage() {
       // Obtener hábitos del usuario
       try {
         console.log('🔍 Obteniendo hábitos del usuario...')
-        habitosData = await obtenerHabitos()
+        const response = await obtenerHabitos()
+        habitosData = response.data // Axios devuelve {data: [...]}
         console.log('✅ Hábitos obtenidos:', habitosData)
         console.log('📋 Cantidad de hábitos:', habitosData?.length || 0)
       } catch (error) {
