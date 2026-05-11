@@ -74,8 +74,16 @@ export default function InicioPage() {
         console.log('🔍 Obteniendo estadísticas generales...')
         estadisticasData = await obtenerEstadisticasGenerales()
         console.log('✅ Estadísticas obtenidas:', estadisticasData)
+        console.log('📊 Detalles de estadísticas:')
+        console.log('  - totalHabitos:', estadisticasData?.totalHabitos)
+        console.log('  - habitosCompletadosHoy:', estadisticasData?.habitosCompletadosHoy)
+        console.log('  - rachaActualMaxima:', estadisticasData?.rachaActualMaxima)
+        console.log('  - mejorRacha:', estadisticasData?.mejorRacha)
+        console.log('  - diasUsoReal:', estadisticasData?.diasUsoReal)
+        console.log('  - ultimos7Dias:', estadisticasData?.ultimos7Dias)
       } catch (error) {
         console.error('❌ Error obteniendo estadísticas:', error)
+        console.error('❌ Detalles del error:', error.response?.data || error.message)
         // Usar valores por defecto si falla
         estadisticasData = {
           totalHabitos: 0,
@@ -88,9 +96,13 @@ export default function InicioPage() {
 
       // Obtener hábitos del usuario
       try {
+        console.log('🔍 Obteniendo hábitos del usuario...')
         habitosData = await obtenerHabitos()
+        console.log('✅ Hábitos obtenidos:', habitosData)
+        console.log('📋 Cantidad de hábitos:', habitosData?.length || 0)
       } catch (error) {
-        console.error('Error obteniendo hábitos:', error)
+        console.error('❌ Error obteniendo hábitos:', error)
+        console.error('❌ Detalles del error:', error.response?.data || error.message)
         habitosData = []
       }
 

@@ -17,12 +17,23 @@ namespace HabitosApp.Application.Services
         public async Task<EstadisticasGeneralesDto> obtenerEstadisticasGenerales(int usuarioId)
         {
             var hoy = DateOnly.FromDateTime(DateTime.UtcNow);
-            Console.WriteLine($"[DEBUG] Obteniendo estadísticas para usuario {usuarioId}, fecha hoy: {hoy}");
+            Console.WriteLine($"[DEBUG] ===== OBTENIENDO ESTADÍSTICAS GENERALES =====");
+            Console.WriteLine($"[DEBUG] Usuario ID: {usuarioId}");
+            Console.WriteLine($"[DEBUG] Fecha hoy: {hoy}");
 
             var habitos = await _contexto.Habitos
                 .Where(h => h.UsuarioId == usuarioId && h.EstaActivo)
                 .ToListAsync();
             Console.WriteLine($"[DEBUG] Hábitos activos encontrados: {habitos.Count}");
+            
+            if (habitos.Any())
+            {
+                Console.WriteLine($"[DEBUG] Lista de hábitos:");
+                foreach (var h in habitos)
+                {
+                    Console.WriteLine($"[DEBUG]   - {h.Nombre} (ID: {h.Id})");
+                }
+            }
 
             // Solo contar registros de hábitos activos y únicos por hábito
             var habitosActivosIds = habitos.Select(h => h.Id).ToList();
@@ -39,6 +50,16 @@ namespace HabitosApp.Application.Services
             var rachas = await _contexto.Rachas
                 .Where(r => r.Habito.UsuarioId == usuarioId)
                 .ToListAsync();
+            Console.WriteLine($"[DEBUG] Rachas encontradas: {rachas.Count}");
+            
+            if (rachas.Any())
+            {
+                Console.WriteLine($"[DEBUG] Detalles de rachas:");
+                foreach (var r in rachas)
+                {
+                    Console.WriteLine($"[DEBUG]   - Hábito ID {r.HabitoId}: Actual={r.DiasActual}, Record={r.DiasRecord}");
+                }
+            }
 
             // Calcular días únicos de uso real de la app (siempre dinámico por ahora)
             var diasUsoReal = await _contexto.RegistrosDiarios
@@ -47,6 +68,12 @@ namespace HabitosApp.Application.Services
                 .Distinct()
                 .CountAsync();
             Console.WriteLine($"[DEBUG] Días únicos de uso real: {diasUsoReal}");
+
+            var mejorRacha = rachas.Any() ? rachas.Max(r => r.DiasRecord) : 0;
+            var rachaActualMaxima = rachas.Any() ? rachas.Max(r => r.DiasActual) : 0;
+            
+            Console.WriteLine($"[DEBUG] Mejor racha calculada: {mejorRacha}");
+            Console.WriteLine($"[DEBUG] Racha actual máxima: {rachaActualMaxima}");
 
             var fechaInicioSemana = hoy.AddDays(-6);
             Console.WriteLine($"[DEBUG] Calculando últimos 7 días desde {fechaInicioSemana} hasta {hoy}");
@@ -84,11 +111,20 @@ namespace HabitosApp.Application.Services
                 porcentajeHoy = habitos.Count > 0
                     ? Math.Round((double)registrosHoy.Count / habitos.Count * 100, 1)
                     : 0,
-                mejorRacha = rachas.Any() ? rachas.Max(r => r.DiasRecord) : 0,
-                rachaActualMaxima = rachas.Any() ? rachas.Max(r => r.DiasActual) : 0,
+                mejorRacha = mejorRacha,
+                rachaActualMaxima = rachaActualMaxima,
                 diasUsoReal = diasUsoReal, // Usar siempre el cálculo dinámico por ahora
                 ultimos7Dias = ultimos7Dias
             };
+            
+            Console.WriteLine($"[DEBUG] ===== RESULTADO FINAL =====");
+            Console.WriteLine($"[DEBUG] totalHabitos: {habitos.Count}");
+            Console.WriteLine($"[DEBUG] habitosCompletadosHoy: {registrosHoy.Count}");
+            Console.WriteLine($"[DEBUG] mejorRacha: {mejorRacha}");
+            Console.WriteLine($"[DEBUG] rachaActualMaxima: {rachaActualMaxima}");
+            Console.WriteLine($"[DEBUG] diasUsoReal: {diasUsoReal}");
+            Console.WriteLine($"[DEBUG] ultimos7Dias count: {ultimos7Dias.Count}");
+            Console.WriteLine($"[DEBUG] ================================");
         }
 
         public async Task<List<EstadisticaHabitoDto>> obtenerEstadisticasPorHabito(int usuarioId, DateOnly fechaInicio, DateOnly fechaFin)
