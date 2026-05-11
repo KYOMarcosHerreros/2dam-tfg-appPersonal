@@ -47,6 +47,10 @@ export default function InicioPage() {
         return
       }
 
+      let estadisticasData = null
+      let habitosData = []
+      let resumenHoy = null
+
       // Obtener estadísticas generales reales
       try {
         console.log('🔍 Obteniendo estadísticas generales...')
@@ -88,7 +92,7 @@ export default function InicioPage() {
 
       // Obtener resumen del día de hoy - DESHABILITADO TEMPORALMENTE
       // Esta funcionalidad se implementará más adelante
-      let resumenHoy = null
+      resumenHoy = null
 
       // Calcular días de uso real (desde el backend)
       let diasUso = estadisticasData?.diasUsoReal || 0
