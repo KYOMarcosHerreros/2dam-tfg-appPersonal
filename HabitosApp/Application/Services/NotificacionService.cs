@@ -182,23 +182,34 @@ namespace HabitosApp.Application.Services
 
         private async Task enviarEmailConSendGridAPI(string destinatario, string nombre, string asunto, string cuerpo, string apiKey, string nombreRemitente)
         {
-            var emailData = new
+            int intentos = 0;
+            int maxIntentos = 3;
+            Exception ultimoError = null;
+
+            while (intentos < maxIntentos)
             {
-                personalizations = new[]
+                try
                 {
-                    new
+                    intentos++;
+                    Console.WriteLine($"📧 NOTIFICACIÓN - Intento {intentos}/{maxIntentos} de envío a {destinatario}");
+
+                    var emailData = new
                     {
-                        to = new[] { new { email = destinatario, name = nombre } },
-                        subject = asunto
-                    }
-                },
-                from = new { email = "marcosTfgCartero@gmail.com", name = nombreRemitente ?? "HabitosApp" },
-                content = new[]
-                {
-                    new
-                    {
-                        type = "text/html",
-                        value = $@"
+                        personalizations = new[]
+                        {
+                            new
+                            {
+                                to = new[] { new { email = destinatario, name = nombre } },
+                                subject = asunto
+                            }
+                        },
+                        from = new { email = "marcosTfgCartero@gmail.com", name = nombreRemitente ?? "HabitosApp" },
+                        content = new[]
+                        {
+                            new
+                            {
+                                type = "text/html",
+                                value = $@"
 <!DOCTYPE html>
 <html>
 <head>
@@ -253,30 +264,54 @@ namespace HabitosApp.Application.Services
     </div>
 </body>
 </html>"
+                            }
+                        }
+                    };
+
+                    using var httpClient = new HttpClient();
+                    httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey);
+                    httpClient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+
+                    var json = System.Text.Json.JsonSerializer.Serialize(emailData);
+                    var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+
+                    Console.WriteLine("📤 NOTIFICACIÓN - Enviando via SendGrid HTTP API...");
+                    var response = await httpClient.PostAsync("https://api.sendgrid.com/v3/mail/send", content);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        Console.WriteLine($"✅ NOTIFICACIÓN - Email enviado exitosamente a {destinatario} en intento {intentos}");
+                        return;
+                    }
+                    else
+                    {
+                        var errorContent = await response.Content.ReadAsStringAsync();
+                        ultimoError = new Exception($"SendGrid API Error: {response.StatusCode} - {errorContent}");
+                        Console.WriteLine($"❌ NOTIFICACIÓN - Error en intento {intentos}: {response.StatusCode}");
+                        
+                        // Esperar antes de reintentar (exponencial backoff)
+                        if (intentos < maxIntentos)
+                        {
+                            await Task.Delay(1000 * intentos);
+                        }
                     }
                 }
-            };
-
-            using var httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey);
-            httpClient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-
-            var json = System.Text.Json.JsonSerializer.Serialize(emailData);
-            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
-
-            Console.WriteLine("📤 NOTIFICACIÓN - Enviando via SendGrid HTTP API...");
-            var response = await httpClient.PostAsync("https://api.sendgrid.com/v3/mail/send", content);
-
-            if (response.IsSuccessStatusCode)
-            {
-                Console.WriteLine("✅ NOTIFICACIÓN - Email enviado exitosamente via HTTP API");
+                catch (Exception ex)
+                {
+                    ultimoError = ex;
+                    Console.WriteLine($"❌ NOTIFICACIÓN - Error en intento {intentos}: {ex.Message}");
+                    
+                    // Esperar antes de reintentar
+                    if (intentos < maxIntentos)
+                    {
+                        await Task.Delay(1000 * intentos);
+                    }
+                }
             }
-            else
-            {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"❌ NOTIFICACIÓN - Error HTTP API: {response.StatusCode} - {errorContent}");
-                throw new Exception($"SendGrid API Error: {response.StatusCode} - {errorContent}");
-            }
+
+            // Si llegamos aquí, todos los intentos fallaron
+            Console.WriteLine($"❌ NOTIFICACIÓN - Falló después de {maxIntentos} intentos");
+            throw ultimoError ?? new Exception("Error enviando email después de múltiples intentos");
         }
     }
 }

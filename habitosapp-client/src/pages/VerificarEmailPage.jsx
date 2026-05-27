@@ -30,20 +30,12 @@ export default function VerificarEmailPage() {
     }
 
     try {
-      const authToken = localStorage.getItem('token')
-      if (!authToken) {
-        setEstado('error')
-        setMensaje('Debes iniciar sesión para verificar tu email')
-        return
-      }
-
-      const response = await fetch('/api/VerificacionEmail/confirmar', {
-        method: 'POST',
+      // Intentar primero con el endpoint JSON (sin autenticación)
+      const response = await fetch(`/api/VerificacionEmail/confirmar-json/${token}`, {
+        method: 'GET',
         headers: {
-          'Authorization': `Bearer ${authToken}`,
           'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ token })
+        }
       })
 
       const data = await response.json()

@@ -89,7 +89,56 @@ namespace HabitosApp.Controllers
         }
 
         /// <summary>
-        /// Endpoint público para verificar email directamente desde el enlace del correo
+        /// Endpoint JSON para verificar email (usado por la app)
+        /// </summary>
+        [HttpGet("confirmar-json/{token}")]
+        public async Task<IActionResult> ConfirmarVerificacionJson(string token)
+        {
+            try
+            {
+                Console.WriteLine($"🔥 VERIFICACIÓN JSON - Token recibido: {token}");
+                
+                var usuario = await _verificacionService.BuscarUsuarioPorToken(token);
+                Console.WriteLine($"🔥 VERIFICACIÓN JSON - Usuario encontrado: {usuario?.Id ?? 0}");
+                
+                if (usuario == null)
+                {
+                    return BadRequest(new { 
+                        verificado = false, 
+                        mensaje = "Token inválido o expirado" 
+                    });
+                }
+
+                var exito = await _verificacionService.confirmarVerificacionEmail(usuario.Id, token);
+                Console.WriteLine($"🔥 VERIFICACIÓN JSON - Resultado: {exito}");
+                
+                if (exito)
+                {
+                    return Ok(new { 
+                        verificado = true, 
+                        mensaje = "Email verificado correctamente. Las notificaciones han sido activadas." 
+                    });
+                }
+                else
+                {
+                    return BadRequest(new { 
+                        verificado = false, 
+                        mensaje = "Token inválido o expirado" 
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"🔥 VERIFICACIÓN JSON - Error: {ex.Message}");
+                return BadRequest(new { 
+                    verificado = false, 
+                    mensaje = ex.Message 
+                });
+            }
+        }
+
+        /// <summary>
+        /// Endpoint público para verificar email directamente desde el enlace del correo (HTML)
         /// </summary>
         [HttpGet("confirmar/{token}")]
         public async Task<IActionResult> ConfirmarVerificacionDirecta(string token)

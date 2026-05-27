@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Bell, Check, CheckCheck, Trash2, Inbox } from 'lucide-react'
 import { obtenerNotificaciones, marcarComoLeida, marcarTodasComoLeidas, eliminarNotificacion } from '../api/notificaciones'
+import { useNotificacionesPolling } from '../hooks/useNotificacionesPolling'
 import toast from 'react-hot-toast'
 import './NotificacionesPage.css'
 
@@ -10,26 +11,31 @@ export default function NotificacionesPage() {
   const [cargando, setCargando] = useState(true)
   const [filtro, setFiltro] = useState('todas') // 'todas', 'noLeidas', 'leidas'
 
+  const cargarNotificaciones = async () => {
+    try {
+      const response = await obtenerNotificaciones()
+      setNotificaciones(response.data)
+    } catch (error) {
+      console.error('Error al cargar notificaciones:', error)
+      if (cargando) {
+        toast.error('Error al cargar notificaciones')
+      }
+    } finally {
+      if (cargando) {
+        setCargando(false)
+      }
+    }
+  }
+
+  // Usar polling para actualizar notificaciones cada 30 segundos
+  useNotificacionesPolling(cargarNotificaciones, 30000)
+
   useEffect(() => {
-    cargarNotificaciones()
     document.title = 'Notificaciones - BetterYOU'
     return () => {
       document.title = 'BetterYOU'
     }
   }, [])
-
-  const cargarNotificaciones = async () => {
-    try {
-      setCargando(true)
-      const response = await obtenerNotificaciones()
-      setNotificaciones(response.data)
-    } catch (error) {
-      console.error('Error al cargar notificaciones:', error)
-      toast.error('Error al cargar notificaciones')
-    } finally {
-      setCargando(false)
-    }
-  }
 
   const handleMarcarLeida = async (id) => {
     try {

@@ -497,3 +497,66 @@
 }
 
 /* Actualización: Widget principal verde + responsive móvil - v5.0 */
+
+
+/* Animaciones mejoradas para números */
+.widget-numero-grande span,
+.stat-numero span {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Animación suave para números que cuentan */
+@keyframes countUp {
+  0% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Efecto de scroll reveal */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Animación de confeti personalizada */
+@keyframes confetiFall {
+  to {
+    transform: translateY(100vh) rotateZ(360deg);
+    opacity: 0;
+  }
+}
+
+/* Mejora visual para widgets al aparecer */
+.inicio-widget {
+  animation: slideInUp 0.6s ease-out forwards;
+}
+
+/* Animación de pulse para números importantes */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.widget-numero-grande {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* Transición suave para cambios de números */
+.widget-numero-grande span,
+.stat-numero span {
+  transition: all 0.3s ease;
+}

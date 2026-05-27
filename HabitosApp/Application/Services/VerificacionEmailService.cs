@@ -114,9 +114,8 @@ namespace HabitosApp.Application.Services
 
         private string GenerarTokenSeguro()
         {
-            // Generar código de 6 dígitos para verificación manual
-            var random = new Random();
-            return random.Next(100000, 999999).ToString();
+            // Generar token UUID seguro en lugar de 6 dígitos
+            return Guid.NewGuid().ToString("N").Substring(0, 32);
         }
 
         private async Task enviarEmailVerificacion(string destinatario, string nombre, string token)
@@ -193,23 +192,34 @@ namespace HabitosApp.Application.Services
 
             Console.WriteLine($"🔗 URL de verificación: {urlVerificacion}");
 
-            var emailData = new
+            int intentos = 0;
+            int maxIntentos = 3;
+            Exception ultimoError = null;
+
+            while (intentos < maxIntentos)
             {
-                personalizations = new[]
+                try
                 {
-                    new
+                    intentos++;
+                    Console.WriteLine($"📧 VERIFICACIÓN - Intento {intentos}/{maxIntentos} de envío a {destinatario}");
+
+                    var emailData = new
                     {
-                        to = new[] { new { email = destinatario, name = nombre } },
-                        subject = "🔐 Verificación en 2 pasos - HabitosApp"
-                    }
-                },
-                from = new { email = "marcosTfgCartero@gmail.com", name = nombreRemitente ?? "HabitosApp" },
-                content = new[]
-                {
-                    new
-                    {
-                        type = "text/html",
-                        value = $@"
+                        personalizations = new[]
+                        {
+                            new
+                            {
+                                to = new[] { new { email = destinatario, name = nombre } },
+                                subject = "🔐 Verificación en 2 pasos - HabitosApp"
+                            }
+                        },
+                        from = new { email = "marcosTfgCartero@gmail.com", name = nombreRemitente ?? "HabitosApp" },
+                        content = new[]
+                        {
+                            new
+                            {
+                                type = "text/html",
+                                value = $@"
 <!DOCTYPE html>
 <html>
 <head>
@@ -262,30 +272,54 @@ namespace HabitosApp.Application.Services
     </div>
 </body>
 </html>"
+                            }
+                        }
+                    };
+
+                    using var httpClient = new HttpClient();
+                    httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey);
+                    httpClient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+
+                    var json = System.Text.Json.JsonSerializer.Serialize(emailData);
+                    var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+
+                    Console.WriteLine("📤 Enviando email via SendGrid HTTP API...");
+                    var response = await httpClient.PostAsync("https://api.sendgrid.com/v3/mail/send", content);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        Console.WriteLine($"✅ Email enviado exitosamente a {destinatario} en intento {intentos}");
+                        return;
+                    }
+                    else
+                    {
+                        var errorContent = await response.Content.ReadAsStringAsync();
+                        ultimoError = new Exception($"SendGrid API Error: {response.StatusCode} - {errorContent}");
+                        Console.WriteLine($"❌ Error en intento {intentos}: {response.StatusCode}");
+                        
+                        // Esperar antes de reintentar
+                        if (intentos < maxIntentos)
+                        {
+                            await Task.Delay(1000 * intentos);
+                        }
                     }
                 }
-            };
-
-            using var httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey);
-            httpClient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-
-            var json = System.Text.Json.JsonSerializer.Serialize(emailData);
-            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
-
-            Console.WriteLine("📤 Enviando email via SendGrid HTTP API...");
-            var response = await httpClient.PostAsync("https://api.sendgrid.com/v3/mail/send", content);
-
-            if (response.IsSuccessStatusCode)
-            {
-                Console.WriteLine("✅ Email enviado exitosamente via HTTP API");
+                catch (Exception ex)
+                {
+                    ultimoError = ex;
+                    Console.WriteLine($"❌ Error en intento {intentos}: {ex.Message}");
+                    
+                    // Esperar antes de reintentar
+                    if (intentos < maxIntentos)
+                    {
+                        await Task.Delay(1000 * intentos);
+                    }
+                }
             }
-            else
-            {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"❌ Error HTTP API: {response.StatusCode} - {errorContent}");
-                throw new Exception($"SendGrid API Error: {response.StatusCode} - {errorContent}");
-            }
+
+            // Si llegamos aquí, todos los intentos fallaron
+            Console.WriteLine($"❌ Falló después de {maxIntentos} intentos");
+            throw ultimoError ?? new Exception("Error enviando email después de múltiples intentos");
         }
 
         private async Task enviarEmailConSMTP(string destinatario, string nombre, string token, string servidor, string password, string nombreRemitente)
