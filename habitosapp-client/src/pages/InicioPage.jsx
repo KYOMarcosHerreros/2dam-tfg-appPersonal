@@ -336,37 +336,13 @@ export default function InicioPage() {
           </motion.div>
         </ScrollReveal>
 
-        {/* Widget de Racha Máxima */}
-        <ScrollReveal delay={0.2}>
-          <motion.div
-            className="inicio-widget inicio-widget-racha"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-          >
-            <div className="widget-contenido">
-              <div className="widget-header">
-                <Flame size={24} />
-                <span>Racha Máxima</span>
-              </div>
-              <div className="widget-numero-grande">
-                <AnimatedNumber value={estadisticas?.rachaMaxima || 0} duration={1000} />
-              </div>
-              <p>días consecutivos</p>
-              <div className="widget-secundario">
-                Actual: <AnimatedNumber value={estadisticas?.rachaActual || 0} duration={1000} /> días
-              </div>
-            </div>
-          </motion.div>
-        </ScrollReveal>
-
         {/* Widget de Record de Uso */}
-        <ScrollReveal delay={0.3}>
+        <ScrollReveal delay={0.2}>
           <motion.div
             className="inicio-widget inicio-widget-record"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3, duration: 0.5 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
           >
             <div className="widget-contenido">
               <div className="widget-header">
@@ -379,6 +355,30 @@ export default function InicioPage() {
               <p>días usando la app</p>
               <div className="widget-secundario">
                 ¡Sigue así! 🎉
+              </div>
+            </div>
+          </motion.div>
+        </ScrollReveal>
+
+        {/* Widget de Racha Máxima */}
+        <ScrollReveal delay={0.3}>
+          <motion.div
+            className="inicio-widget inicio-widget-racha"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+          >
+            <div className="widget-contenido">
+              <div className="widget-header">
+                <Flame size={24} />
+                <span>Racha Máxima</span>
+              </div>
+              <div className="widget-numero-grande">
+                <AnimatedNumber value={estadisticas?.rachaMaxima || 0} duration={1000} />
+              </div>
+              <p>días consecutivos</p>
+              <div className="widget-secundario">
+                Actual: <AnimatedNumber value={estadisticas?.rachaActual || 0} duration={1000} /> días
               </div>
             </div>
           </motion.div>
