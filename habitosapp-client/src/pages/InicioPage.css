@@ -29,7 +29,8 @@
 
 .inicio-widgets-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  /* Layout fijo para evitar reflow inesperado y scroll extra */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 24px;
 }
 
@@ -69,7 +70,8 @@
 
 /* Widget Principal - Hábitos CON DISEÑO VERDE NUEVO */
 .inicio-widget-principal {
-  grid-column: span 2;
+  grid-column: 1;
+  grid-row: 1;
   background: linear-gradient(135deg,
     rgba(34, 197, 94, 0.1) 0%,
     rgba(30, 42, 58, 0.9) 100%);
@@ -84,6 +86,31 @@
 /* Widget de ancho completo */
 .inicio-widget-ancho-completo {
   grid-column: 1 / -1; /* Ocupa todo el ancho disponible */
+}
+
+/* Colocación por tipo (desktop) */
+.inicio-widget-record {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.inicio-widget-racha {
+  grid-column: 3;
+  grid-row: 1;
+}
+
+.inicio-widget-tiempo {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.inicio-widget-noticias {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.inicio-widget-stats.inicio-widget-ancho-completo {
+  grid-row: 3;
 }
 
 /* Widget de Racha - Naranja/Rojo ORIGINAL */
@@ -409,6 +436,17 @@
 
   .inicio-widget-principal {
     grid-column: span 1;
+    grid-row: auto;
+  }
+
+  /* Reset de colocación fija para evitar columnas implícitas */
+  .inicio-widget-record,
+  .inicio-widget-racha,
+  .inicio-widget-tiempo,
+  .inicio-widget-noticias,
+  .inicio-widget-stats.inicio-widget-ancho-completo {
+    grid-column: auto;
+    grid-row: auto;
   }
 
   .inicio-widget-ancho-completo {
