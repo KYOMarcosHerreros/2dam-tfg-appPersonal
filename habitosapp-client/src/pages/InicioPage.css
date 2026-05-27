@@ -33,6 +33,15 @@
   gap: 24px;
 }
 
+/* El layout del grid se aplica en el wrapper (ScrollReveal), no en la card interna */
+.inicio-grid-item-principal {
+  grid-column: span 2;
+}
+
+.inicio-grid-item-stats {
+  grid-column: 1 / -1;
+}
+
 .inicio-widget {
   background: linear-gradient(135deg,
     rgba(22, 22, 29, 0.8) 0%,
@@ -407,12 +416,9 @@
     gap: 16px;
   }
 
-  .inicio-widget-principal {
-    grid-column: span 1;
-  }
-
-  .inicio-widget-ancho-completo {
-    grid-column: 1 / -1;
+  .inicio-grid-item-principal,
+  .inicio-grid-item-stats {
+    grid-column: auto;
   }
 
   .inicio-widget {

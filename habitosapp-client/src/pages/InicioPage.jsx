@@ -290,7 +290,7 @@ export default function InicioPage() {
       <div className="inicio-widgets-grid">
         
         {/* Widget de Hábitos - Adaptativo */}
-        <ScrollReveal delay={0.1}>
+        <ScrollReveal delay={0.1} className="inicio-grid-item inicio-grid-item-principal">
           <motion.div
             className="inicio-widget inicio-widget-principal"
             initial={{ opacity: 0, scale: 0.9 }}
@@ -337,7 +337,7 @@ export default function InicioPage() {
         </ScrollReveal>
 
         {/* Widget de Record de Uso */}
-        <ScrollReveal delay={0.2}>
+        <ScrollReveal delay={0.2} className="inicio-grid-item inicio-grid-item-record">
           <motion.div
             className="inicio-widget inicio-widget-record"
             initial={{ opacity: 0, scale: 0.9 }}
@@ -361,7 +361,7 @@ export default function InicioPage() {
         </ScrollReveal>
 
         {/* Widget de Racha Máxima */}
-        <ScrollReveal delay={0.3}>
+        <ScrollReveal delay={0.3} className="inicio-grid-item inicio-grid-item-racha">
           <motion.div
             className="inicio-widget inicio-widget-racha"
             initial={{ opacity: 0, scale: 0.9 }}
@@ -385,7 +385,7 @@ export default function InicioPage() {
         </ScrollReveal>
 
         {/* Widget del Tiempo */}
-        <ScrollReveal delay={0.4}>
+        <ScrollReveal delay={0.4} className="inicio-grid-item inicio-grid-item-tiempo">
           <motion.div
             className="inicio-widget inicio-widget-tiempo"
             initial={{ opacity: 0, scale: 0.9 }}
@@ -416,7 +416,7 @@ export default function InicioPage() {
         </ScrollReveal>
 
         {/* Widget de Noticias */}
-        <ScrollReveal delay={0.5}>
+        <ScrollReveal delay={0.5} className="inicio-grid-item inicio-grid-item-noticias">
           <motion.div
             className="inicio-widget inicio-widget-noticias"
             initial={{ opacity: 0, scale: 0.9 }}
@@ -439,7 +439,7 @@ export default function InicioPage() {
         </ScrollReveal>
 
         {/* Widget de Estadísticas Rápidas - Ancho completo */}
-        <ScrollReveal delay={0.6}>
+        <ScrollReveal delay={0.6} className="inicio-grid-item inicio-grid-item-stats">
           <motion.div
             className="inicio-widget inicio-widget-stats inicio-widget-ancho-completo"
             initial={{ opacity: 0, scale: 0.9 }}
