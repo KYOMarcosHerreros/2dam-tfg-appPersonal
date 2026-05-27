@@ -46,7 +46,14 @@ export function useHabitos() {
     year: 'numeric'
   }).format(fechaSeleccionada);
 
-  const fechaHoy = fechaSeleccionada.toISOString().split('T')[0]; // YYYY-MM-DD
+  const formatearFechaLocal = (fecha) => {
+    const year = fecha.getFullYear();
+    const month = String(fecha.getMonth() + 1).padStart(2, '0');
+    const day = String(fecha.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const fechaHoy = formatearFechaLocal(fechaSeleccionada); // YYYY-MM-DD local
 
   useEffect(() => {
     const cargarTodo = async () => {

@@ -112,6 +112,33 @@ namespace HabitosApp.Application.Services
             return resumenes;
         }
 
+        public async Task<RachaDto> recalcularRacha(int usuarioId, int habitoId)
+        {
+            var habito = await _contexto.Habitos
+                .FirstOrDefaultAsync(h => h.Id == habitoId && h.UsuarioId == usuarioId);
+
+            if (habito == null)
+                throw new Exception("Hábito no encontrado");
+
+            await actualizarRacha(habitoId, DateOnly.FromDateTime(DateTime.UtcNow), false);
+
+            var racha = await _contexto.Rachas
+                .FirstOrDefaultAsync(r => r.HabitoId == habitoId);
+
+            if (racha == null)
+                throw new Exception("Racha no encontrada");
+
+            return new RachaDto
+            {
+                habitoId = racha.HabitoId,
+                habitoNombre = habito.Nombre,
+                diasActual = racha.DiasActual,
+                diasRecord = racha.DiasRecord,
+                fechaInicioActual = racha.FechaInicioActual,
+                fechaUltimoRegistro = racha.FechaUltimoRegistro
+            };
+        }
+
         private async Task actualizarRacha(int habitoId, DateOnly fecha, bool completado)
         {
             var racha = await _contexto.Rachas
@@ -145,29 +172,27 @@ namespace HabitosApp.Application.Services
                 Console.WriteLine($"[DEBUG] Fechas: {string.Join(", ", registrosCompletados.Take(10))}");
             }
 
+            var hoy = DateOnly.FromDateTime(DateTime.UtcNow);
+
             if (registrosCompletados.Count == 0)
             {
                 // No hay registros completados
                 racha.DiasActual = 0;
-                racha.FechaInicioActual = fecha;
-                racha.FechaUltimoRegistro = fecha;
+                racha.FechaInicioActual = hoy;
+                racha.FechaUltimoRegistro = hoy;
                 Console.WriteLine($"[DEBUG] No hay registros completados, racha = 0");
             }
             else
             {
-                // Calcular la racha actual (días consecutivos hasta hoy o la fecha más reciente)
-                var hoy = DateOnly.FromDateTime(DateTime.UtcNow);
-                var fechaMasReciente = registrosCompletados.Max();
+                // IMPORTANTE: Solo contar racha actual si incluye HOY
+                // Si hoy no está marcado, la racha actual es 0
                 var rachaActual = 0;
-                var fechaActual = hoy;
                 var fechaInicioRacha = hoy;
 
-                Console.WriteLine($"[DEBUG] Calculando racha actual desde hoy: {hoy}, fecha más reciente: {fechaMasReciente}");
-
-                // Solo contar la racha si incluye el día de hoy
                 if (registrosCompletados.Contains(hoy))
                 {
                     // Contar hacia atrás desde hoy
+                    var fechaActual = hoy;
                     while (registrosCompletados.Contains(fechaActual))
                     {
                         rachaActual++;
@@ -175,13 +200,14 @@ namespace HabitosApp.Application.Services
                         Console.WriteLine($"[DEBUG] Día {rachaActual}: {fechaActual}");
                         fechaActual = fechaActual.AddDays(-1);
                     }
+                    Console.WriteLine($"[DEBUG] Racha actual calculada: {rachaActual} días (desde {fechaInicioRacha} hasta {hoy})");
                 }
                 else
                 {
-                    Console.WriteLine($"[DEBUG] No hay registro para hoy, racha actual = 0");
+                    Console.WriteLine($"[DEBUG] Hoy ({hoy}) NO está marcado, racha actual = 0");
+                    rachaActual = 0;
+                    fechaInicioRacha = hoy;
                 }
-
-                Console.WriteLine($"[DEBUG] Racha actual calculada: {rachaActual} días (desde {fechaInicioRacha} hasta {hoy})");
 
                 // Calcular la racha más larga histórica
                 var rachaMaxima = 0;
@@ -209,7 +235,7 @@ namespace HabitosApp.Application.Services
                 racha.DiasActual = rachaActual;
                 racha.DiasRecord = Math.Max(racha.DiasRecord, rachaMaxima);
                 racha.FechaInicioActual = fechaInicioRacha;
-                racha.FechaUltimoRegistro = registrosCompletados.Contains(hoy) ? hoy : fechaMasReciente;
+                racha.FechaUltimoRegistro = registrosCompletados.Contains(hoy) ? hoy : registrosCompletados.Max();
 
                 Console.WriteLine($"[DEBUG] Racha después - Actual: {racha.DiasActual}, Record: {racha.DiasRecord}");
             }

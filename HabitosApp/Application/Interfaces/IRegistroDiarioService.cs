@@ -7,5 +7,6 @@ namespace HabitosApp.Application.Interfaces
         Task<ResumenDiarioDto> obtenerResumenDia(int usuarioId, DateOnly fecha);
         Task<RegistroDiarioDto> marcarHabito(int usuarioId, MarcarHabitoDto dto);
         Task<List<ResumenDiarioDto>> obtenerResumenSemana(int usuarioId, DateOnly fechaInicio);
+        Task<RachaDto> recalcularRacha(int usuarioId, int habitoId);
     }
 }

@@ -1,5 +1,3 @@
-using HabitosApp.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
 using HabitosApp.Application.DTOs;
 using HabitosApp.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -14,12 +12,14 @@ namespace HabitosApp.Controllers
     public class HabitosController : ControllerBase
     {
         private readonly IHabitoService _habitoService;
-        private readonly AppDbContext _contexto;
+        private readonly IRegistroDiarioService _registroDiarioService;
 
-        public HabitosController(IHabitoService habitoService, AppDbContext contexto)
+        public HabitosController(
+            IHabitoService habitoService,
+            IRegistroDiarioService registroDiarioService)
         {
             _habitoService = habitoService;
-            _contexto = contexto;
+            _registroDiarioService = registroDiarioService;
         }
 
         private int obtenerUsuarioId() =>
@@ -155,22 +155,8 @@ namespace HabitosApp.Controllers
         public async Task<IActionResult> ObtenerRacha(int id)
         {
             try {
-                var racha = await _contexto.Rachas
-                    .Include(r => r.Habito)
-                    .FirstOrDefaultAsync(r => r.HabitoId == id && r.Habito.UsuarioId == obtenerUsuarioId());
-
-                if (racha == null)
-                    return NotFound(new { mensaje = "Racha no encontrada" });
-
-                return Ok(new RachaDto
-                {
-                    habitoId = racha.HabitoId,
-                    habitoNombre = racha.Habito.Nombre,
-                    diasActual = racha.DiasActual,
-                    diasRecord = racha.DiasRecord,
-                    fechaInicioActual = racha.FechaInicioActual,
-                    fechaUltimoRegistro = racha.FechaUltimoRegistro
-                });
+                var racha = await _registroDiarioService.recalcularRacha(obtenerUsuarioId(), id);
+                return Ok(racha);
             }
             catch (Exception ex)
             {
@@ -183,36 +169,8 @@ namespace HabitosApp.Controllers
         {
             try
             {
-                var habito = await _contexto.Habitos
-                    .FirstOrDefaultAsync(h => h.Id == id && h.UsuarioId == obtenerUsuarioId());
-
-                if (habito == null)
-                    return NotFound(new { mensaje = "Hábito no encontrado" });
-
-                // Obtener el servicio de registro diario para recalcular
-                var registroService = HttpContext.RequestServices.GetRequiredService<IRegistroDiarioService>();
-                
-                // Forzar recálculo marcando y desmarcando
-                var hoy = DateOnly.FromDateTime(DateTime.UtcNow);
-                await registroService.marcarHabito(obtenerUsuarioId(), new MarcarHabitoDto
-                {
-                    habitoId = id,
-                    fecha = hoy,
-                    completado = true
-                });
-
-                var racha = await _contexto.Rachas
-                    .FirstOrDefaultAsync(r => r.HabitoId == id);
-
-                return Ok(new RachaDto
-                {
-                    habitoId = racha.HabitoId,
-                    habitoNombre = habito.Nombre,
-                    diasActual = racha.DiasActual,
-                    diasRecord = racha.DiasRecord,
-                    fechaInicioActual = racha.FechaInicioActual,
-                    fechaUltimoRegistro = racha.FechaUltimoRegistro
-                });
+                var racha = await _registroDiarioService.recalcularRacha(obtenerUsuarioId(), id);
+                return Ok(racha);
             }
             catch (Exception ex)
             {
