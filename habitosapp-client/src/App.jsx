@@ -15,32 +15,33 @@ import TiempoPage from './pages/TiempoPage'
 import ForoPage from './pages/ForoPage'
 import ForoTemaPage from './pages/ForoTemaPage'
 import ForoNuevoTemaPage from './pages/ForoNuevoTemaPage'
+import LandingPage from './pages/LandingPage' // <-- Importamos la nueva Landing
 
 const queryClient = new QueryClient()
 
 function RutaProtegida({ children }) {
   const { token, cargando } = useAuth()
-  
+
   // Mostrar loading mientras se verifica la autenticación
   if (cargando) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh',
-        background: 'var(--bg-primary)'
+      <div style={{
+         display: 'flex',
+         justifyContent: 'center',
+         alignItems: 'center',
+         height: '100vh',
+         background: 'var(--bg-primary)'
       }}>
         <div style={{ color: 'var(--text-primary)' }}>Cargando...</div>
       </div>
     )
   }
-  
+
   // Si no hay token, redirigir al login
   if (!token) {
     return <Navigate to="/login" replace />
   }
-  
+
   // Si hay token, mostrar el contenido con Layout
   return <Layout>{children}</Layout>
 }
@@ -48,77 +49,69 @@ function RutaProtegida({ children }) {
 function AppRutas() {
   return (
     <Routes>
+      {/* Rutas Públicas */}
+      <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       
-      {/* Dashboard */}
+      {/* Dashboard y Rutas Protegidas */}
       <Route path="/dashboard" element={
         <RutaProtegida>
           <InicioPage />
         </RutaProtegida>
       } />
-
-      {/* LA RUTA CORRECTA DE HÁBITOS (Solo una y con el componente real) */}
       <Route path="/habitos" element={
         <RutaProtegida>
           <HabitosPage />
         </RutaProtegida>
       } />
-
       <Route path="/estadisticas" element={
         <RutaProtegida>
           <EstadisticasPage />
         </RutaProtegida>
       } />
-
       <Route path="/asistente" element={
         <RutaProtegida>
           <AsistentePage />
         </RutaProtegida>
       } />
-
       <Route path="/notificaciones" element={
         <RutaProtegida>
           <NotificacionesPage />
         </RutaProtegida>
       } />
-
       <Route path="/perfil" element={
         <RutaProtegida>
           <PerfilPage />
         </RutaProtegida>
       } />
-
       <Route path="/verificar-email" element={
         <RutaProtegida>
           <VerificarEmailPage />
         </RutaProtegida>
       } />
-
       <Route path="/tiempo" element={
         <RutaProtegida>
           <TiempoPage />
         </RutaProtegida>
       } />
-
       <Route path="/foro" element={
         <RutaProtegida>
           <ForoPage />
         </RutaProtegida>
       } />
-
       <Route path="/foro/tema/:id" element={
         <RutaProtegida>
           <ForoTemaPage />
         </RutaProtegida>
       } />
-
       <Route path="/foro/nuevo" element={
         <RutaProtegida>
           <ForoNuevoTemaPage />
         </RutaProtegida>
       } />
 
-      <Route path="/" element={<Navigate to="/login" />} />
+      {/* Ruta por defecto para URLs no encontradas */}
+      <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   )
 }
