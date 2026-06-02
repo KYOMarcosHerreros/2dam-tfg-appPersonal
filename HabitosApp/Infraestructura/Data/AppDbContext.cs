@@ -14,6 +14,10 @@ namespace HabitosApp.Infrastructure.Data
         public DbSet<Racha> Rachas { get; set; }
         public DbSet<MensajeIA> MensajesIA { get; set; }
         public DbSet<Notificacion> Notificaciones { get; set; }
+        
+        // --- NUEVAS TABLAS DEL FORO ---
+        public DbSet<TemaForo> TemasForo { get; set; }
+        public DbSet<RespuestaForo> RespuestasForo { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -99,6 +103,29 @@ namespace HabitosApp.Infrastructure.Data
                     .WithMany(u => u.Notificaciones)
                     .HasForeignKey(n => n.UsuarioId)
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // --- CONFIGURACIÓN DEL FORO ---
+            modelBuilder.Entity<TemaForo>(entidad =>
+            {
+                entidad.Property(t => t.Titulo).IsRequired().HasMaxLength(200);
+                entidad.HasOne(t => t.Usuario)
+                       .WithMany()
+                       .HasForeignKey(t => t.UsuarioId)
+                       .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<RespuestaForo>(entidad =>
+            {
+                entidad.Property(r => r.Contenido).IsRequired();
+                entidad.HasOne(r => r.Usuario)
+                       .WithMany()
+                       .HasForeignKey(r => r.UsuarioId)
+                       .OnDelete(DeleteBehavior.Restrict);
+                entidad.HasOne(r => r.TemaForo)
+                       .WithMany(t => t.Respuestas)
+                       .HasForeignKey(r => r.TemaForoId)
+                       .OnDelete(DeleteBehavior.Cascade);
             });
         }
     }
