@@ -11,11 +11,11 @@ namespace HabitosApp.Domain.Entities
         public string Categoria { get; set; }
         public DateTime FechaCreacion { get; set; } = DateTime.UtcNow;
         
-        // Relación con el usuario que lo crea
+        // Relación con el usuario que lo crea (Opcional en la validación de entrada)
         public int UsuarioId { get; set; }
-        public Usuario Usuario { get; set; }
+        public Usuario? Usuario { get; set; }
 
-        // Relación con los comentarios
-        public List<RespuestaForo> Respuestas { get; set; } = new List<RespuestaForo>();
+        // Relación con los comentarios (Opcional en la validación de entrada)
+        public List<RespuestaForo>? Respuestas { get; set; } = new List<RespuestaForo>();
     }
 }
