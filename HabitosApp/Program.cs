@@ -193,9 +193,10 @@ using (var scope = app.Services.CreateScope())
         await contexto.Database.CanConnectAsync();
         Console.WriteLine("Database connection successful!");
         
-        Console.WriteLine("Creating database if not exists...");
-        await contexto.Database.EnsureCreatedAsync();
-        Console.WriteLine("Database created successfully!");
+        Console.WriteLine("Applying pending database migrations (Creating new tables if needed)...");
+        // CAMBIO CLAVE: Usar MigrateAsync en lugar de EnsureCreatedAsync
+        await contexto.Database.MigrateAsync();
+        Console.WriteLine("Database migrations applied successfully!");
         
         Console.WriteLine("Initializing seed data...");
         await SeedData.inicializarAsync(contexto);
