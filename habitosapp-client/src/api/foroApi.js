@@ -1,6 +1,6 @@
 import cliente from './cliente'
 
-// Nuestras categorías simuladas para que la web no falle
+// Nuestras categorías simuladas para que la web no falle al cargar
 const categoriasMock = [
   { id: 1, nombre: 'General', color: '#3b82f6' },
   { id: 2, nombre: 'Ejercicios', color: '#10b981' },
@@ -15,25 +15,28 @@ export const obtenerTemas = (params = {}) => cliente.get('/foro/temas', { params
 export const obtenerTema = (id) => cliente.get(`/foro/temas/${id}`)
 
 export const crearTema = (tema) => {
-  // 1. Empezamos asumiendo 'General' por si acaso
+  // 1. Asumimos 'General' por defecto
   let nombreCategoria = 'General';
 
-  // 2. Si React nos envía un número (el ID), buscamos su nombre real
+  // 2. Buscamos el nombre real de la categoría si nos llega un número
   if (typeof tema.categoria === 'number' || typeof tema.categoriaId === 'number') {
     const idBusqueda = tema.categoria || tema.categoriaId;
     const catEncontrada = categoriasMock.find(c => c.id === idBusqueda);
     if (catEncontrada) nombreCategoria = catEncontrada.nombre;
   } 
-  // 3. Si ya nos lo envía como texto, lo dejamos tal cual
+  // 3. Si ya es texto, lo usamos directamente
   else if (typeof tema.categoria === 'string') {
     nombreCategoria = tema.categoria;
   }
 
-  // 4. Empaquetamos los datos exactamente como le gustan a C#
+  // 4. Empaquetamos los datos con campos "dummy" para pasar la validación estricta de C#
   const temaSeguro = {
+    id: 0,                                   // Dato dummy requerido por C#
     titulo: tema.titulo,
     contenido: tema.contenido,
-    categoria: nombreCategoria
+    categoria: nombreCategoria,
+    usuarioId: 0,                            // Dato dummy (El backend pondrá el de tu token)
+    fechaCreacion: new Date().toISOString()  // Dato dummy (El backend pondrá la fecha real)
   };
 
   return cliente.post('/foro/temas', temaSeguro);
@@ -55,6 +58,7 @@ export const eliminarRespuesta = (id) => cliente.delete(`/foro/respuestas/${id}`
 
 
 // ============ REACCIONES ============
+// Simulación temporal para que no crashee si alguien le da a "me gusta"
 export const toggleReaccion = (tipo, temaId = null, respuestaId = null) => 
   Promise.resolve({ data: { success: true } })
 
