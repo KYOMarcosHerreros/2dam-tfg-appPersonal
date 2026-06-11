@@ -10,9 +10,10 @@ import {
   Users,
   Sparkles,
   Filter,
+  Trash2, // <-- Añadido el icono de la papelera
   X
 } from 'lucide-react'
-import { obtenerTemas, obtenerCategorias } from '../api/foroApi'
+import { obtenerTemas, obtenerCategorias, eliminarTema } from '../api/foroApi' // <-- Añadida la función eliminarTema
 import toast from 'react-hot-toast'
 import './ForoPage.css'
 
@@ -25,6 +26,10 @@ export default function ForoPage() {
   const [ordenar, setOrdenar] = useState('reciente') // reciente, popular, activo
   const [cargando, setCargando] = useState(true)
   const [mostrarFiltros, setMostrarFiltros] = useState(false)
+
+  // Extraemos el usuario actual del localStorage para verificar si es dueño de un tema
+  const usuarioGuardado = localStorage.getItem('usuario') || localStorage.getItem('user')
+  const usuarioActual = usuarioGuardado ? JSON.parse(usuarioGuardado) : null
 
   useEffect(() => {
     document.title = 'Foro - BetterYOU'
@@ -39,11 +44,9 @@ export default function ForoPage() {
     try {
       setCargando(true)
       
-      // Cargar categorías
       const resCategorias = await obtenerCategorias()
       setCategorias(resCategorias.data)
       
-      // Cargar temas
       const params = {}
       if (categoriaSeleccionada) params.categoriaId = categoriaSeleccionada
       if (ordenar === 'popular') params.ordenar = 'vistas'
@@ -57,6 +60,23 @@ export default function ForoPage() {
       toast.error('Error al cargar el foro')
     } finally {
       setCargando(false)
+    }
+  }
+
+  // --- NUEVA FUNCIÓN PARA ELIMINAR ---
+  const handleEliminarTema = async (e, idTema) => {
+    e.stopPropagation() // Esto evita que al pulsar la papelera naveguemos dentro del tema
+    
+    if (window.confirm('¿Estás seguro de que quieres eliminar este tema de forma permanente?')) {
+      try {
+        await eliminarTema(idTema)
+        // Actualizamos la lista local borrando el tema eliminado sin recargar la página
+        setTemas(temas.filter(t => t.id !== idTema))
+        toast.success('Tema eliminado correctamente')
+      } catch (error) {
+        console.error('Error al eliminar:', error)
+        toast.error('No se pudo eliminar el tema')
+      }
     }
   }
 
@@ -224,64 +244,87 @@ export default function ForoPage() {
             </motion.div>
           ) : (
             <AnimatePresence>
-              {temasFiltrados.map((tema, index) => (
-                <motion.div
-                  key={tema.id}
-                  className={`foro-tema-card ${tema.fijado ? 'fijado' : ''}`}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ delay: index * 0.05 }}
-                  onClick={() => navigate(`/foro/tema/${tema.id}`)}
-                  whileHover={{ scale: 1.02 }}
-                >
-                  {tema.fijado && (
-                    <div className="tema-fijado-badge">
-                      📌 Fijado
-                    </div>
-                  )}
-                  
-                  <div className="tema-card-header">
-                    <div className="tema-categoria" style={{ '--cat-color': tema.categoria?.color }}>
-                      <span>{obtenerIconoCategoria(tema.categoria?.nombre)}</span>
-                      {tema.categoria?.nombre}
-                    </div>
-                    <div className="tema-meta">
-                      <span className="tema-vistas">👁️ {tema.vistas}</span>
-                    </div>
-                  </div>
+              {temasFiltrados.map((tema, index) => {
+                // Comprobamos si el usuario actual es el autor de este tema
+                const esMiTema = usuarioActual && usuarioActual.nombre === tema.nombreUsuario;
 
-                  <h3 className="tema-titulo">{tema.titulo}</h3>
-                  <p className="tema-preview">{tema.contenido}</p>
-
-                  <div className="tema-card-footer">
-                    <div className="tema-autor">
-                      <div className="autor-avatar">
-                        {tema.nombreUsuario?.charAt(0).toUpperCase()}
+                return (
+                  <motion.div
+                    key={tema.id}
+                    className={`foro-tema-card ${tema.fijado ? 'fijado' : ''}`}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ delay: index * 0.05 }}
+                    onClick={() => navigate(`/foro/tema/${tema.id}`)}
+                    whileHover={{ scale: 1.02 }}
+                  >
+                    {tema.fijado && (
+                      <div className="tema-fijado-badge">
+                        📌 Fijado
                       </div>
-                      <div className="autor-info">
-                        <span className="autor-nombre">{tema.nombreUsuario}</span>
-                        <span className="tema-fecha">
-                          {new Date(tema.fechaCreacion).toLocaleDateString('es-ES', {
-                            day: 'numeric',
-                            month: 'short',
-                            year: 'numeric'
-                          })}
+                    )}
+                    
+                    <div className="tema-card-header">
+                      <div className="tema-categoria" style={{ '--cat-color': tema.categoria?.color }}>
+                        <span>{obtenerIconoCategoria(tema.categoria?.nombre)}</span>
+                        {tema.categoria?.nombre}
+                      </div>
+                      
+                      {/* Botón de eliminar (Solo visible si eres el autor) */}
+                      {esMiTema && (
+                        <button
+                          onClick={(e) => handleEliminarTema(e, tema.id)}
+                          title="Eliminar mi tema"
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: '#ef4444',
+                            cursor: 'pointer',
+                            padding: '6px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            borderRadius: '6px',
+                            transition: 'background-color 0.2s'
+                          }}
+                          onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)'}
+                          onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      )}
+                    </div>
+
+                    <h3 className="tema-titulo">{tema.titulo}</h3>
+                    <p className="tema-preview">{tema.contenido}</p>
+
+                    <div className="tema-card-footer">
+                      <div className="tema-autor">
+                        <div className="autor-avatar">
+                          {tema.nombreUsuario?.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="autor-info">
+                          <span className="autor-nombre">{tema.nombreUsuario}</span>
+                          <span className="tema-fecha">
+                            {new Date(tema.fechaCreacion).toLocaleDateString('es-ES', {
+                              day: 'numeric',
+                              month: 'short',
+                              year: 'numeric'
+                            })}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="tema-stats">
+                        <span className="stat-item">
+                          💬 {tema.respuestas?.length || 0}
                         </span>
+                        {/* Se eliminó el icono del corazón */}
                       </div>
                     </div>
-
-                    <div className="tema-stats">
-                      <span className="stat-item">
-                        💬 {tema.respuestas?.length || 0}
-                      </span>
-                      <span className="stat-item">
-                        ❤️ {tema.reacciones?.length || 0}
-                      </span>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                )
+              })}
             </AnimatePresence>
           )}
         </div>
